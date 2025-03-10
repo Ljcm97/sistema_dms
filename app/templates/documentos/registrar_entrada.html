@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Documento Entrante{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">Registrar Documento Entrante</h1>
+            <p class="text-muted">Ingrese la información del documento recibido</p>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Formulario de Registro</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('documentos.registrar_entrada') }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        {{ form.fecha_recepcion.label(class="form-label") }}
+                        {{ form.fecha_recepcion(class="form-control", type="datetime-local") }}
+                        {% if form.fecha_recepcion.errors %}
+                            <div class="text-danger">
+                                {% for error in form.fecha_recepcion.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        {{ form.transportadora_id.label(class="form-label") }}
+                        {{ form.transportadora_id(class="form-select") }}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        {{ form.numero_guia.label(class="form-label") }}
+                        {{ form.numero_guia(class="form-control", placeholder="Número de guía") }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.remitente.label(class="form-label") }}
+                        {{ form.remitente(class="form-control", placeholder="Nombre del remitente") }}
+                        {% if form.remitente.errors %}
+                            <div class="text-danger">
+                                {% for error in form.remitente.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.tipo_documento_id.label(class="form-label") }}
+                        {{ form.tipo_documento_id(class="form-select") }}
+                        {% if form.tipo_documento_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.tipo_documento_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.contenido.label(class="form-label") }}
+                    {{ form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.observaciones.label(class="form-label") }}
+                    {{ form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.area_destino_id.label(class="form-label") }}
+                        {{ form.area_destino_id(class="form-select", id="area_destino_id") }}
+                        {% if form.area_destino_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.area_destino_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.persona_destino_id.label(class="form-label") }}
+                        {{ form.persona_destino_id(class="form-select", id="persona_destino_id") }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.adjunto.label(class="form-label") }}
+                    {{ form.adjunto(class="form-control") }}
+                    <small class="text-muted">Formatos permitidos: PDF, PNG, JPG, JPEG, DOC, DOCX, XLS, XLSX. Máximo 16MB.</small>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('documentos.lista_documentos') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Inicializar con la fecha y hora actual si el campo está vacío
+        if (!$('#fecha_recepcion').val()) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+            $('#fecha_recepcion').val(formattedDate);
+        }
+        
+        // Cargar personas al cambiar el área
+        $('#area_destino_id').change(function() {
+            cargarPersonasPorArea('#area_destino_id', '#persona_destino_id');
+        });
+    });
+</script>
+{% endblock %}

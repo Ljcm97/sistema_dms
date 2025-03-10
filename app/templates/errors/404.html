@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Página no encontrada{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-body text-center">
+                    <h1 class="display-1">404</h1>
+                    <h2>Página no encontrada</h2>
+                    <p class="lead">Lo sentimos, la página que estás buscando no existe.</p>
+                    <a href="{{ url_for('documentos.dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Volver al inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

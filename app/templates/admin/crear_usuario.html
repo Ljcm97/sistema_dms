@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Usuario{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">Crear Nuevo Usuario</h1>
+            <p class="text-muted">Complete el formulario para crear un nuevo usuario</p>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Formulario de Creación</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.crear_usuario') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-control", placeholder="Nombre de usuario") }}
+                    {% if form.username.errors %}
+                        <div class="text-danger">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.persona_id.label(class="form-label") }}
+                    {{ form.persona_id(class="form-select") }}
+                    {% if form.persona_id.errors %}
+                        <div class="text-danger">
+                            {% for error in form.persona_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Seleccione la persona a la que se asignará el usuario.</small>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.rol_id.label(class="form-label") }}
+                    {{ form.rol_id(class="form-select") }}
+                    {% if form.rol_id.errors %}
+                        <div class="text-danger">
+                            {% for error in form.rol_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control", placeholder="Contraseña") }}
+                    {% if form.password.errors %}
+                        <div class="text-danger">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">La contraseña debe tener al menos 8 caracteres.</small>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.password2.label(class="form-label") }}
+                    {{ form.password2(class="form-control", placeholder="Repita la contraseña") }}
+                    {% if form.password2.errors %}
+                        <div class="text-danger">
+                            {% for error in form.password2.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3 form-check">
+                    {{ form.activo(class="form-check-input") }}
+                    {{ form.activo.label(class="form-check-label") }}
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('admin.usuarios') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

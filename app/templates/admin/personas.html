@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Personas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Gestión de Personas</h1>
+            <a href="{{ url_for('admin.crear_persona') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nueva Persona
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtro de búsqueda -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtros de Búsqueda</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.personas') }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Buscar por nombre, apellido o email..." value="{{ search }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" name="area_id" onchange="this.form.submit()">
+                            <option value="0">Todas las áreas</option>
+                            {% for area in areas %}
+                            <option value="{{ area.id }}" {% if area_id == area.id %}selected{% endif %}>{{ area.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        {% if search or area_id > 0 %}
+                        <a href="{{ url_for('admin.personas') }}" class="btn btn-secondary w-100">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Personas -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Personas</h6>
+        </div>
+        <div class="card-body">
+            {% if personas %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Área</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for persona in personas %}
+                        <tr>
+                            <td>{{ persona.nombre }}</td>
+                            <td>{{ persona.apellido }}</td>
+                            <td>{{ persona.email or 'N/A' }}</td>
+                            <td>{{ persona.telefono or 'N/A' }}</td>
+                            <td>{{ persona.area.nombre }}</td>
+                            <td>
+                                {% if persona.activo %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin.editar_persona', id=persona.id) }}" class="btn btn-sm btn-info" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form class="d-inline" method="POST" action="{{ url_for('admin.eliminar_persona', id=persona.id) }}" onsubmit="return confirmarEliminacion(event, '¿Está seguro de que desea eliminar esta persona?')">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Paginación">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.personas', page=pagination.prev_num, search=search, area_id=area_id) }}">
+                            &laquo; Anterior
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Anterior</span>
+                    </li>
+                    {% endif %}
+
+                    {% for page in pagination.iter_pages() %}
+                        {% if page %}
+                            {% if page != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.personas', page=page, search=search, area_id=area_id) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.personas', page=pagination.next_num, search=search, area_id=area_id) }}">
+                            Siguiente &raquo;
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Siguiente &raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <p class="text-center">No se encontraron personas.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

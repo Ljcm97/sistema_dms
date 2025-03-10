@@ -1,0 +1,71 @@
+/* Estilos generales */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    flex: 1;
+}
+
+/* Estilos para tabla de documentos */
+.table-documents th, .table-documents td {
+    vertical-align: middle;
+}
+
+/* Estilos para el timeline */
+.timeline {
+    position: relative;
+    padding: 0;
+    list-style: none;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 40px;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.timeline-badge {
+    position: absolute;
+    top: 0;
+    left: 30px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    z-index: 1;
+}
+
+.timeline-panel {
+    position: relative;
+    margin-left: 60px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+/* Utilidades */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Borders para las tarjetas */
+.border-left-primary {
+    border-left: 4px solid #FF0000;
+}
+
+.border-left-success {
+    border-left: 4px solid #28a745;
+}

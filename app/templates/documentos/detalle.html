@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Documento {{ documento.radicado }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">
+                Documento {{ documento.radicado }}
+                {% if documento.es_entrada %}
+                <span class="badge bg-primary">Entrada</span>
+                {% else %}
+                <span class="badge bg-secondary">Salida</span>
+                {% endif %}
+            </h1>
+            <div>
+                <a href="{{ url_for('documentos.lista_documentos') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información del Documento -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Información del Documento</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width: 35%">Radicado</th>
+                                <td>{{ documento.radicado }}</td>
+                            </tr>
+                            <tr>
+                                <th>Fecha de Recepción</th>
+                                <td>{{ documento.fecha_recepcion.strftime('%d/%m/%Y %H:%M') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Transportadora</th>
+                                <td>{{ documento.transportadora.nombre if documento.transportadora else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Número de Guía</th>
+                                <td>{{ documento.numero_guia or 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Remitente</th>
+                                <td>{{ documento.remitente }}</td>
+                            </tr>
+                            <tr>
+                                <th>Tipo de Documento</th>
+                                <td>{{ documento.tipo_documento.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <th>Estado</th>
+                                <td>
+                                    <span class="badge" style="background-color: {{ documento.estado.color }}">
+                                        {{ documento.estado.nombre }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Área Actual</th>
+                                <td>{{ documento.area_actual.nombre }}</td>
+                            </tr>
+                            <tr>
+                                <th>Persona Actual</th>
+                                <td>{{ documento.persona_actual.nombre_completo if documento.persona_actual else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Contenido</th>
+                                <td>{{ documento.contenido or 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Observaciones</th>
+                                <td>{{ documento.observaciones or 'N/A' }}</td>
+                            </tr>
+                            {% if documento.ruta_adjunto %}
+                            <tr>
+                                <th>Adjunto</th>
+                                <td>
+                                    <a href="{{ url_for('documentos.ver_adjunto', filename=documento.ruta_adjunto) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i> Descargar Adjunto
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Registrado por</th>
+                                <td>{{ documento.creador.username }} ({{ documento.creado_en.strftime('%d/%m/%Y %H:%M') }})</td>
+                            </tr>
+                            {% if documento.usuario_actualizacion_id %}
+                            <tr>
+                                <th>Última Actualización</th>
+                                <td>{{ documento.actualizador.username }} ({{ documento.actualizado_en.strftime('%d/%m/%Y %H:%M') }})</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Transferencia -->
+            {% if puede_transferir %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Transferir Documento</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('documentos.transferir_documento') }}">
+                        {{ form_transferencia.hidden_tag() }}
+                        {{ form_transferencia.documento_id() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form_transferencia.area_destino_id.label(class="form-label") }}
+                                {{ form_transferencia.area_destino_id(class="form-select", id="area_destino_id") }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form_transferencia.persona_destino_id.label(class="form-label") }}
+                                {{ form_transferencia.persona_destino_id(class="form-select", id="persona_destino_id") }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_transferencia.estado_id.label(class="form-label") }}
+                            {{ form_transferencia.estado_id(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form_transferencia.observaciones.label(class="form-label") }}
+                            {{ form_transferencia.observaciones(class="form-control", rows=3, placeholder="Observaciones sobre la transferencia") }}
+                        </div>
+                        
+                        {{ form_transferencia.submit(class="btn btn-primary") }}
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Historial de Movimientos -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Historial de Movimientos</h6>
+                </div>
+                <div class="card-body">
+                    {% if historial %}
+                    <ul class="timeline">
+                        {% for mov in historial %}
+                        <li class="timeline-item">
+                            <div class="timeline-badge" style="background-color: {{ mov.estado.color }}"></div>
+                            <div class="timeline-panel">
+                                <div class="timeline-heading">
+                                    <h6 class="timeline-title">
+                                        {{ mov.fecha_movimiento.strftime('%d/%m/%Y %H:%M') }}
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user"></i> {{ mov.usuario.username }}
+                                    </small>
+                                </div>
+                                <div class="timeline-body">
+                                    <p>De: <strong>{{ mov.area_origen.nombre }}</strong> 
+                                       {% if mov.persona_origen %}
+                                       ({{ mov.persona_origen.nombre_completo }})
+                                       {% endif %}
+                                    </p>
+                                    <p>A: <strong>{{ mov.area_destino.nombre }}</strong>
+                                       {% if mov.persona_destino %}
+                                       ({{ mov.persona_destino.nombre_completo }})
+                                       {% endif %}
+                                    </p>
+                                    <p>Estado: <span class="badge" style="background-color: {{ mov.estado.color }}">
+                                        {{ mov.estado.nombre }}
+                                    </span></p>
+                                    {% if mov.observaciones %}
+                                    <p class="mt-2">{{ mov.observaciones }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-center">No hay movimientos registrados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Cargar personas al cambiar el área
+        $('#area_destino_id').change(function() {
+            cargarPersonasPorArea('#area_destino_id', '#persona_destino_id');
+        });
+        
+        // Cargar automáticamente las personas del área seleccionada
+        if ($('#area_destino_id').val() > 0) {
+            cargarPersonasPorArea('#area_destino_id', '#persona_destino_id');
+        }
+    });
+</script>
+{% endblock %}
