@@ -1,8 +1,6 @@
-from flask_wtf import FlaskForm, RecaptchaField
-from flask_wtf.file import FileField, FileAllowed
+from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, BooleanField, SubmitField, 
-                    SelectField, TextAreaField, DateTimeField, HiddenField,
-                    IntegerField)
+                    SelectField, TextAreaField, DateTimeField, HiddenField)
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, ValidationError
 from app.models.usuario import Usuario
 from app.models.documento import Transportadora, TipoDocumento, EstadoDocumento
@@ -86,6 +84,7 @@ class PersonaForm(FlaskForm):
         self.area_id.choices = [(a.id, a.nombre) 
                                for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()]
 
+
 class DocumentoEntradaForm(FlaskForm):
     """
     Formulario para registrar documentos entrantes
@@ -99,11 +98,7 @@ class DocumentoEntradaForm(FlaskForm):
     contenido = TextAreaField('Contenido')
     observaciones = TextAreaField('Observaciones')
     area_destino_id = SelectField('Área Destino', coerce=int, validators=[DataRequired()])
-    persona_destino_id = SelectField('Persona Destino', coerce=int, validators=[Optional()])
-    adjunto = FileField('Adjuntar Documento', validators=[
-        FileAllowed(['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx'], 
-                    'Solo se permiten archivos PDF, imágenes, documentos Word y Excel.')
-    ])
+    persona_destino_id = SelectField('Persona Destino', coerce=int)  # Sin validadores
     submit = SubmitField('Registrar Documento')
     
     def __init__(self, *args, **kwargs):
@@ -118,6 +113,10 @@ class DocumentoEntradaForm(FlaskForm):
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
         self.persona_destino_id.choices = [(0, '-- Seleccione --')]
+        
+    def validate_persona_destino_id(self, field):
+        # Si el valor es 0 o no está en las opciones, simplemente no lo validamos
+        return True
 
 class DocumentoSalidaForm(FlaskForm):
     """
@@ -128,15 +127,11 @@ class DocumentoSalidaForm(FlaskForm):
     transportadora_id = SelectField('Transportadora', coerce=int, validators=[DataRequired()])
     numero_guia = StringField('Número de Guía', validators=[Length(1, 50), Optional()])
     area_origen_id = SelectField('Área Origen', coerce=int, validators=[DataRequired()])
-    persona_origen_id = SelectField('Persona Origen', coerce=int, validators=[Optional()])
+    persona_origen_id = SelectField('Persona Origen', coerce=int)  # Sin validadores
     destinatario = StringField('Destinatario', validators=[DataRequired(), Length(1, 255)])
     tipo_documento_id = SelectField('Tipo de Documento', coerce=int, validators=[DataRequired()])
     contenido = TextAreaField('Contenido')
     observaciones = TextAreaField('Observaciones')
-    adjunto = FileField('Adjuntar Documento', validators=[
-        FileAllowed(['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx'], 
-                    'Solo se permiten archivos PDF, imágenes, documentos Word y Excel.')
-    ])
     submit = SubmitField('Registrar Envío')
     
     def __init__(self, *args, **kwargs):
@@ -151,6 +146,10 @@ class DocumentoSalidaForm(FlaskForm):
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
         self.persona_origen_id.choices = [(0, '-- Seleccione --')]
+        
+    def validate_persona_origen_id(self, field):
+        # Si el valor es 0 o no está en las opciones, simplemente no lo validamos
+        return True
 
 class TransferenciaDocumentoForm(FlaskForm):
     """
@@ -207,3 +206,38 @@ class BusquedaForm(FlaskForm):
         self.estado_id.choices = [(0, 'Todos')] + [
             (e.id, e.nombre) for e in EstadoDocumento.query.order_by(EstadoDocumento.nombre).all()
         ]
+
+class TransportadoraForm(FlaskForm):
+    """
+    Formulario para crear/editar transportadoras
+    """
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(1, 100)])
+    descripcion = TextAreaField('Descripción')
+    activo = BooleanField('Activo', default=True)
+    submit = SubmitField('Guardar')
+
+class TipoDocumentoForm(FlaskForm):
+    """
+    Formulario para crear/editar tipos de documento
+    """
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(1, 100)])
+    descripcion = TextAreaField('Descripción')
+    activo = BooleanField('Activo', default=True)
+    submit = SubmitField('Guardar')
+
+class RemitenteForm(FlaskForm):
+    """
+    Formulario para crear/editar remitentes
+    """
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(1, 100)])
+    tipo = SelectField('Tipo', choices=[
+        ('PROVEEDOR', 'Proveedor'),
+        ('CLIENTE', 'Cliente'),
+        ('INTERNO', 'Interno'),
+        ('OTRO', 'Otro')
+    ], validators=[DataRequired()])
+    email = StringField('Email', validators=[Email(), Length(1, 100), Optional()])
+    telefono = StringField('Teléfono', validators=[Length(1, 20), Optional()])
+    direccion = StringField('Dirección', validators=[Length(1, 255), Optional()])
+    activo = BooleanField('Activo', default=True)
+    submit = SubmitField('Guardar')

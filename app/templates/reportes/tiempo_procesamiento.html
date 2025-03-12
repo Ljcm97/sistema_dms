@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Tiempo de Procesamiento{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Reporte: Tiempo de Procesamiento por Área</h1>
+            <div>
+                <a href="{{ url_for('reportes.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Fecha -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('reportes.tiempo_procesamiento') }}">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha Desde</label>
+                        <input type="date" class="form-control" name="fecha_desde" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha Hasta</label>
+                        <input type="date" class="form-control" name="fecha_hasta" value="{{ fecha_hasta }}">
+                    </div>
+                    <div class="col-md-4 align-self-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('reportes.exportar', tipo='tiempo-procesamiento', fecha_desde=fecha_desde, fecha_hasta=fecha_hasta) }}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Exportar a Excel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gráfico y Tabla -->
+    <div class="row">
+        <!-- Gráfico -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Gráfico</h6>
+                </div>
+                <div class="card-body">
+                    <img src="{{ url_for('reportes.generar_grafico', tipo='tiempo-procesamiento', fecha_desde=fecha_desde, fecha_hasta=fecha_hasta) }}" 
+                         class="img-fluid" alt="Gráfico de Tiempo de Procesamiento">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Datos -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Datos</h6>
+                </div>
+                <div class="card-body">
+                    {% if datos %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Área</th>
+                                    <th>Horas Promedio</th>
+                                    <th>Documentos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in datos %}
+                                <tr>
+                                    <td>{{ item.area }}</td>
+                                    <td class="text-end">{{ item.horas_promedio }}</td>
+                                    <td class="text-center">{{ item.cantidad }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center">No hay datos para mostrar con los filtros seleccionados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

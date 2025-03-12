@@ -45,12 +45,18 @@ def create_app(config_name=None):
     from app.controllers.documentos import documentos_bp
     from app.controllers.reportes import reportes_bp
     from app.controllers.api import api_bp
+    from app.controllers.transportadoras import transportadoras_bp
+    from app.controllers.tipos_documentos import tipos_bp
+    from app.controllers.notificaciones import notificaciones_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(documentos_bp)
     app.register_blueprint(reportes_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(transportadoras_bp)
+    app.register_blueprint(tipos_bp)
+    app.register_blueprint(notificaciones_bp)
     
     # Handlers para errores
     register_error_handlers(app)
@@ -59,15 +65,20 @@ def create_app(config_name=None):
     @app.shell_context_processor
     def make_shell_context():
         from app.models.usuario import Usuario
-        from app.models.documento import Documento
+        from app.models.documento import Documento, TipoDocumento, Transportadora, EstadoDocumento
         from app.models.area import Area
         from app.models.persona import Persona
+        from app.models.notificacion import Notificacion
         return {
             'db': db,
             'Usuario': Usuario,
             'Documento': Documento,
+            'TipoDocumento': TipoDocumento,
+            'Transportadora': Transportadora,
+            'EstadoDocumento': EstadoDocumento,
             'Area': Area,
-            'Persona': Persona
+            'Persona': Persona,
+            'Notificacion': Notificacion
         }
     
     # Contexto global para las plantillas (para pasar `now` a todas las plantillas)

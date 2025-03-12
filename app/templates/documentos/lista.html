@@ -8,12 +8,12 @@
         <div class="col-12 d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-0 text-gray-800">Lista de Documentos</h1>
             <div>
-                <a href="{{ url_for('documentos.registrar_entrada') }}" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEntrada">
                     <i class="fas fa-file-import"></i> Entrada
-                </a>
-                <a href="{{ url_for('documentos.registrar_salida') }}" class="btn btn-secondary">
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalSalida">
                     <i class="fas fa-file-export"></i> Salida
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -178,4 +178,272 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para Documento Entrante -->
+<div class="modal fade" id="modalEntrada" tabindex="-1" aria-labelledby="modalEntradaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalEntradaLabel">Registrar Documento Entrante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEntrada" method="POST" action="{{ url_for('documentos.registrar_entrada') }}">
+                    {{ entrada_form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha de Recepción</label>
+                            <input type="date" class="form-control" name="fecha" id="entrada_fecha" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Hora de Recepción</label>
+                            <input type="time" class="form-control" name="hora" id="entrada_hora" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ entrada_form.transportadora_id.label(class="form-label") }}
+                            {{ entrada_form.transportadora_id(class="form-select") }}
+                            {% if entrada_form.transportadora_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in entrada_form.transportadora_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ entrada_form.numero_guia.label(class="form-label") }}
+                            {{ entrada_form.numero_guia(class="form-control", placeholder="Número de guía") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ entrada_form.remitente.label(class="form-label") }}
+                        {{ entrada_form.remitente(class="form-control", placeholder="Nombre del remitente") }}
+                        {% if entrada_form.remitente.errors %}
+                            <div class="text-danger">
+                                {% for error in entrada_form.remitente.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ entrada_form.tipo_documento_id.label(class="form-label") }}
+                        {{ entrada_form.tipo_documento_id(class="form-select") }}
+                        {% if entrada_form.tipo_documento_id.errors %}
+                            <div class="text-danger">
+                                {% for error in entrada_form.tipo_documento_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ entrada_form.contenido.label(class="form-label") }}
+                        {{ entrada_form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ entrada_form.observaciones.label(class="form-label") }}
+                        {{ entrada_form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ entrada_form.area_destino_id.label(class="form-label") }}
+                            {{ entrada_form.area_destino_id(class="form-select", id="entrada_area_destino_id") }}
+                            {% if entrada_form.area_destino_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in entrada_form.area_destino_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ entrada_form.persona_destino_id.label(class="form-label") }}
+                            {{ entrada_form.persona_destino_id(class="form-select", id="entrada_persona_destino_id") }}
+                        </div>
+                    </div>
+
+                    <!-- Campo oculto para combinar fecha y hora -->
+                    <input type="hidden" name="fecha_recepcion" id="entrada_fecha_recepcion">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSubmitEntrada">Registrar Documento</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Documento Saliente -->
+<div class="modal fade" id="modalSalida" tabindex="-1" aria-labelledby="modalSalidaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title" id="modalSalidaLabel">Registrar Documento Saliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formSalida" method="POST" action="{{ url_for('documentos.registrar_salida') }}">
+                    {{ salida_form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha de Envío</label>
+                            <input type="date" class="form-control" name="fecha" id="salida_fecha" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Hora de Envío</label>
+                            <input type="time" class="form-control" name="hora" id="salida_hora" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ salida_form.transportadora_id.label(class="form-label") }}
+                            {{ salida_form.transportadora_id(class="form-select") }}
+                            {% if salida_form.transportadora_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in salida_form.transportadora_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ salida_form.numero_guia.label(class="form-label") }}
+                            {{ salida_form.numero_guia(class="form-control", placeholder="Número de guía") }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ salida_form.area_origen_id.label(class="form-label") }}
+                            {{ salida_form.area_origen_id(class="form-select", id="salida_area_origen_id") }}
+                            {% if salida_form.area_origen_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in salida_form.area_origen_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ salida_form.persona_origen_id.label(class="form-label") }}
+                            {{ salida_form.persona_origen_id(class="form-select", id="salida_persona_origen_id") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ salida_form.destinatario.label(class="form-label") }}
+                        {{ salida_form.destinatario(class="form-control", placeholder="Nombre/Empresa destinataria") }}
+                        {% if salida_form.destinatario.errors %}
+                            <div class="text-danger">
+                                {% for error in salida_form.destinatario.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ salida_form.tipo_documento_id.label(class="form-label") }}
+                        {{ salida_form.tipo_documento_id(class="form-select") }}
+                        {% if salida_form.tipo_documento_id.errors %}
+                            <div class="text-danger">
+                                {% for error in salida_form.tipo_documento_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ salida_form.contenido.label(class="form-label") }}
+                        {{ salida_form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ salida_form.observaciones.label(class="form-label") }}
+                        {{ salida_form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
+                    </div>
+
+                    <!-- Campo oculto para combinar fecha y hora -->
+                    <input type="hidden" name="fecha_envio" id="salida_fecha_envio">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSubmitSalida">Registrar Documento</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Inicializar fecha actual
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const hours = String(today.getHours()).padStart(2, '0');
+        const minutes = String(today.getMinutes()).padStart(2, '0');
+        
+        // Establecer valores por defecto para entrada
+        $('#entrada_fecha').val(`${year}-${month}-${day}`);
+        $('#entrada_hora').val(`${hours}:${minutes}`);
+        
+        // Establecer valores por defecto para salida
+        $('#salida_fecha').val(`${year}-${month}-${day}`);
+        $('#salida_hora').val(`${hours}:${minutes}`);
+        
+        // Manejar envío del formulario de entrada
+        $('#btnSubmitEntrada').click(function() {
+            // Combinar fecha y hora
+            const fecha = $('#entrada_fecha').val();
+            const hora = $('#entrada_hora').val();
+            $('#entrada_fecha_recepcion').val(`${fecha} ${hora}`);
+            
+            // Enviar formulario
+            $('#formEntrada').submit();
+        });
+        
+        // Manejar envío del formulario de salida
+        $('#btnSubmitSalida').click(function() {
+            // Combinar fecha y hora
+            const fecha = $('#salida_fecha').val();
+            const hora = $('#salida_hora').val();
+            $('#salida_fecha_envio').val(`${fecha} ${hora}`);
+            
+            // Enviar formulario
+            $('#formSalida').submit();
+        });
+        
+        // Cargar personas al cambiar el área (documento entrante)
+        $('#entrada_area_destino_id').change(function() {
+            cargarPersonasPorArea('#entrada_area_destino_id', '#entrada_persona_destino_id');
+        });
+        
+        // Cargar personas al cambiar el área (documento saliente)
+        $('#salida_area_origen_id').change(function() {
+            cargarPersonasPorArea('#salida_area_origen_id', '#salida_persona_origen_id');
+        });
+    });
+</script>
 {% endblock %}

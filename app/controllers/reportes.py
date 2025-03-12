@@ -152,11 +152,11 @@ def tiempo_procesamiento():
     
     # Convertir a datetime
     fecha_desde = datetime.strptime(fecha_desde, '%Y-%m-%d')
-    fecha_hasta = datetime.strptime(fecha_hasta, '%Y-%m-%d') + timedelta(days=1)
+    fecha_hasta = datetime.strptime(fecha_hasta, '%Y-%m-%d') + timedelta(days=1)  # Incluir el día completo
     
     # Consulta personalizada para calcular el tiempo promedio de procesamiento por área
-    # Esta consulta utiliza subconsultas para calcular los tiempos entre movimientos
-    query = """
+    from sqlalchemy import text
+    query = text("""
     WITH movimientos_consecutivos AS (
         SELECT 
             h1.documento_id,
@@ -187,7 +187,7 @@ def tiempo_procesamiento():
         area_origen
     ORDER BY 
         horas_promedio DESC
-    """
+    """)
     
     # Ejecutar la consulta
     resultados = db.session.execute(query, {

@@ -18,6 +18,19 @@
                 <a href="{{ url_for('documentos.lista_documentos') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
+                
+                {% if es_destinatario and pendiente_aceptacion %}
+                <div class="btn-group ms-2">
+                    <form method="POST" action="{{ url_for('documentos.aceptar_documento', id=documento.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Aceptar Documento
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalRechazar">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -80,16 +93,6 @@
                                 <th>Observaciones</th>
                                 <td>{{ documento.observaciones or 'N/A' }}</td>
                             </tr>
-                            {% if documento.ruta_adjunto %}
-                            <tr>
-                                <th>Adjunto</th>
-                                <td>
-                                    <a href="{{ url_for('documentos.ver_adjunto', filename=documento.ruta_adjunto) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-download"></i> Descargar Adjunto
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endif %}
                             <tr>
                                 <th>Registrado por</th>
                                 <td>{{ documento.creador.username }} ({{ documento.creado_en.strftime('%d/%m/%Y %H:%M') }})</td>
@@ -193,6 +196,30 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para rechazar documento -->
+<div class="modal fade" id="modalRechazar" tabindex="-1" aria-labelledby="modalRechazarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalRechazarLabel">Rechazar Documento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('documentos.rechazar_documento', id=documento.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="motivo" class="form-label">Motivo del rechazo</label>
+                        <textarea class="form-control" id="motivo" name="motivo" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Rechazar Documento</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

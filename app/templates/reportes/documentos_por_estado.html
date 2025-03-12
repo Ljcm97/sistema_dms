@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Documentos por Estado{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Reporte: Documentos por Estado</h1>
+            <div>
+                <a href="{{ url_for('reportes.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Fecha y Área -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('reportes.documentos_por_estado') }}">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Desde</label>
+                        <input type="date" class="form-control" name="fecha_desde" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Hasta</label>
+                        <input type="date" class="form-control" name="fecha_hasta" value="{{ fecha_hasta }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Área</label>
+                        <select class="form-select" name="area_id">
+                            {% for area in areas %}
+                            <option value="{{ area.id }}" {% if area.id == area_id %}selected{% endif %}>{{ area.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 align-self-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('reportes.exportar', tipo='documentos-por-estado', fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, area_id=area_id) }}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Exportar a Excel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gráfico y Tabla -->
+    <div class="row">
+        <!-- Gráfico -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Gráfico</h6>
+                </div>
+                <div class="card-body">
+                    <img src="{{ url_for('reportes.generar_grafico', tipo='documentos-por-estado', fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, area_id=area_id) }}" 
+                         class="img-fluid" alt="Gráfico de Documentos por Estado">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Datos -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Datos</h6>
+                </div>
+                <div class="card-body">
+                    {% if datos %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Estado</th>
+                                    <th>Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in datos %}
+                                <tr>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ item.color }}">
+                                            {{ item.estado }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">{{ item.cantidad }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-weight-bold">
+                                    <td>Total</td>
+                                    <td class="text-end">{{ datos|sum(attribute='cantidad') }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center">No hay datos para mostrar con los filtros seleccionados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
