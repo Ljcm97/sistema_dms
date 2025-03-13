@@ -241,3 +241,12 @@ class RemitenteForm(FlaskForm):
     direccion = StringField('Dirección', validators=[Length(1, 255), Optional()])
     activo = BooleanField('Activo', default=True)
     submit = SubmitField('Guardar')
+
+class AreaForm(FlaskForm):
+    """
+    Formulario para crear/editar áreas
+    """
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(1, 100)])
+    descripcion = TextAreaField('Descripción')
+    activo = BooleanField('Activo', default=True)
+    submit = SubmitField('Guardar')

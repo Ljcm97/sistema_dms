@@ -47,6 +47,7 @@ def create_app(config_name=None):
     from app.controllers.api import api_bp
     from app.controllers.transportadoras import transportadoras_bp
     from app.controllers.tipos_documentos import tipos_bp
+    from app.controllers.areas import areas_bp
     from app.controllers.notificaciones import notificaciones_bp
     
     app.register_blueprint(auth_bp)
@@ -56,6 +57,7 @@ def create_app(config_name=None):
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(transportadoras_bp)
     app.register_blueprint(tipos_bp)
+    app.register_blueprint(areas_bp)
     app.register_blueprint(notificaciones_bp)
     
     # Handlers para errores
