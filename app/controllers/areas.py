@@ -155,23 +155,28 @@ def eliminar(id):
         flash('No tienes permisos para acceder a esta sección', 'danger')
         return redirect(url_for('documentos.dashboard'))
     
-    area = Area.query.get_or_404(id)
+    try:
+        area = Area.query.get_or_404(id)
+        
+        # Verificar si el área está en uso por personas
+        if area.personas.count() > 0:
+            flash(f'No se puede eliminar el área {area.nombre} porque está asignada a personas', 'danger')
+            return redirect(url_for('areas.index'))
+        
+        # Verificar si el área está en uso por documentos
+        if area.documentos_actuales.count() > 0:
+            flash(f'No se puede eliminar el área {area.nombre} porque está asignada a documentos', 'danger')
+            return redirect(url_for('areas.index'))
+        
+        # Guardar nombre para mensaje
+        nombre = area.nombre
+        
+        db.session.delete(area)
+        db.session.commit()
+        
+        flash(f'Área {nombre} eliminada correctamente', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar: {str(e)}', 'danger')
     
-    # Verificar si el área está en uso por personas
-    if area.personas.count() > 0:
-        flash(f'No se puede eliminar el área {area.nombre} porque está asignada a personas', 'danger')
-        return redirect(url_for('areas.index'))
-    
-    # Verificar si el área está en uso por documentos
-    if area.documentos_actuales.count() > 0:
-        flash(f'No se puede eliminar el área {area.nombre} porque está asignada a documentos', 'danger')
-        return redirect(url_for('areas.index'))
-    
-    # Guardar nombre para mensaje
-    nombre = area.nombre
-    
-    db.session.delete(area)
-    db.session.commit()
-    
-    flash(f'Área {nombre} eliminada correctamente', 'success')
     return redirect(url_for('areas.index'))

@@ -48,6 +48,7 @@ def create_app(config_name=None):
     from app.controllers.transportadoras import transportadoras_bp
     from app.controllers.tipos_documentos import tipos_bp
     from app.controllers.areas import areas_bp
+    from app.controllers.zonas_economicas import zonas_bp
     from app.controllers.notificaciones import notificaciones_bp
     
     app.register_blueprint(auth_bp)
@@ -58,6 +59,7 @@ def create_app(config_name=None):
     app.register_blueprint(transportadoras_bp)
     app.register_blueprint(tipos_bp)
     app.register_blueprint(areas_bp)
+    app.register_blueprint(zonas_bp)
     app.register_blueprint(notificaciones_bp)
     
     # Handlers para errores
@@ -71,6 +73,7 @@ def create_app(config_name=None):
         from app.models.area import Area
         from app.models.persona import Persona
         from app.models.notificacion import Notificacion
+        from app.models.privilegio import Privilegio
         return {
             'db': db,
             'Usuario': Usuario,
@@ -80,7 +83,8 @@ def create_app(config_name=None):
             'EstadoDocumento': EstadoDocumento,
             'Area': Area,
             'Persona': Persona,
-            'Notificacion': Notificacion
+            'Notificacion': Notificacion,
+            'Privilegio': Privilegio
         }
     
     # Contexto global para las plantillas (para pasar `now` a todas las plantillas)

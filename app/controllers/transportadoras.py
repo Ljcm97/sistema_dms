@@ -155,18 +155,23 @@ def eliminar(id):
         flash('No tienes permisos para acceder a esta sección', 'danger')
         return redirect(url_for('documentos.dashboard'))
     
-    transportadora = Transportadora.query.get_or_404(id)
+    try:
+        transportadora = Transportadora.query.get_or_404(id)
+        
+        # Verificar si la transportadora está en uso
+        if transportadora.documentos.count() > 0:
+            flash(f'No se puede eliminar la transportadora {transportadora.nombre} porque está en uso', 'danger')
+            return redirect(url_for('transportadoras.index'))
+        
+        # Guardar nombre para mensaje
+        nombre = transportadora.nombre
+        
+        db.session.delete(transportadora)
+        db.session.commit()
+        
+        flash(f'Transportadora {nombre} eliminada correctamente', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar: {str(e)}', 'danger')
     
-    # Verificar si la transportadora está en uso
-    if transportadora.documentos.count() > 0:
-        flash(f'No se puede eliminar la transportadora {transportadora.nombre} porque está en uso', 'danger')
-        return redirect(url_for('transportadoras.index'))
-    
-    # Guardar nombre para mensaje
-    nombre = transportadora.nombre
-    
-    db.session.delete(transportadora)
-    db.session.commit()
-    
-    flash(f'Transportadora {nombre} eliminada correctamente', 'success')
     return redirect(url_for('transportadoras.index'))

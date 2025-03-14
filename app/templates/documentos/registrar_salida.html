@@ -5,119 +5,190 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-12 d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-0 text-gray-800">Registrar Documento Saliente</h1>
+            <a href="{{ url_for('documentos.lista_documentos') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a Documentos
+            </a>
+        </div>
+        <div class="col-12">
             <p class="text-muted">Ingrese la información del documento que se enviará</p>
         </div>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Formulario de Registro</h6>
+    <div class="row">
+        <!-- Formulario de Registro -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-secondary text-white">
+                    <h6 class="m-0 font-weight-bold">Formulario de Registro</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('documentos.registrar_salida') }}" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.fecha_envio.label(class="form-label") }}
+                                {{ form.fecha_envio(class="form-control", type="datetime-local") }}
+                                {% if form.fecha_envio.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.fecha_envio.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.transportadora_id.label(class="form-label") }}
+                                {{ form.transportadora_id(class="form-select") }}
+                                {% if form.transportadora_id.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.transportadora_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.numero_guia.label(class="form-label") }}
+                                {{ form.numero_guia(class="form-control", placeholder="Número de guía") }}
+                                {% if form.numero_guia.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.numero_guia.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.destinatario.label(class="form-label") }}
+                                {{ form.destinatario(class="form-control", placeholder="Nombre/Empresa destinataria") }}
+                                {% if form.destinatario.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.destinatario.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.area_origen_id.label(class="form-label") }}
+                                {{ form.area_origen_id(class="form-select", id="area_origen_id") }}
+                                {% if form.area_origen_id.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.area_origen_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.persona_origen_id.label(class="form-label") }}
+                                {{ form.persona_origen_id(class="form-select", id="persona_origen_id") }}
+                                {% if form.persona_origen_id.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.persona_origen_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.tipo_documento_id.label(class="form-label") }}
+                            {{ form.tipo_documento_id(class="form-select") }}
+                            {% if form.tipo_documento_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.tipo_documento_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.contenido.label(class="form-label") }}
+                            {{ form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
+                            {% if form.contenido.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.contenido.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.observaciones.label(class="form-label") }}
+                            {{ form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
+                            {% if form.observaciones.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.observaciones.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.adjunto.label(class="form-label") }}
+                            {{ form.adjunto(class="form-control") }}
+                            <small class="text-muted">Formatos permitidos: PDF, PNG, JPG, JPEG, DOC, DOCX, XLS, XLSX. Máximo 16MB.</small>
+                            {% if form.adjunto.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.adjunto.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i> Limpiar Formulario
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Registrar Documento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('documentos.registrar_salida') }}" enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
-                
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        {{ form.fecha_envio.label(class="form-label") }}
-                        {{ form.fecha_envio(class="form-control", type="datetime-local") }}
-                        {% if form.fecha_envio.errors %}
-                            <div class="text-danger">
-                                {% for error in form.fecha_envio.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-4">
-                        {{ form.transportadora_id.label(class="form-label") }}
-                        {{ form.transportadora_id(class="form-select") }}
-                        {% if form.transportadora_id.errors %}
-                            <div class="text-danger">
-                                {% for error in form.transportadora_id.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-4">
-                        {{ form.numero_guia.label(class="form-label") }}
-                        {{ form.numero_guia(class="form-control", placeholder="Número de guía") }}
+        
+        <!-- Ayuda e Información -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">Información</h6>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Documentos Salientes</h5>
+                    <p>Utilice este formulario para registrar documentos que salen de la empresa.</p>
+                    <hr>
+                    <ul>
+                        <li>Complete todos los campos requeridos marcados con *.</li>
+                        <li>El radicado se genera automáticamente por el sistema.</li>
+                        <li>Asegúrese de seleccionar correctamente la transportadora.</li>
+                        <li>En el campo Destinatario, indique la empresa o persona a quien va dirigido el documento.</li>
+                    </ul>
+                    <hr>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i> Los documentos salientes quedan registrados con el área y persona de origen seleccionados.
                     </div>
                 </div>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        {{ form.area_origen_id.label(class="form-label") }}
-                        {{ form.area_origen_id(class="form-select", id="area_origen_id") }}
-                        {% if form.area_origen_id.errors %}
-                            <div class="text-danger">
-                                {% for error in form.area_origen_id.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6">
-                        {{ form.persona_origen_id.label(class="form-label") }}
-                        {{ form.persona_origen_id(class="form-select", id="persona_origen_id") }}
-                    </div>
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        {{ form.destinatario.label(class="form-label") }}
-                        {{ form.destinatario(class="form-control", placeholder="Nombre/Empresa destinataria") }}
-                        {% if form.destinatario.errors %}
-                            <div class="text-danger">
-                                {% for error in form.destinatario.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="col-md-6">
-                        {{ form.tipo_documento_id.label(class="form-label") }}
-                        {{ form.tipo_documento_id(class="form-select") }}
-                        {% if form.tipo_documento_id.errors %}
-                            <div class="text-danger">
-                                {% for error in form.tipo_documento_id.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.contenido.label(class="form-label") }}
-                    {{ form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.observaciones.label(class="form-label") }}
-                    {{ form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.adjunto.label(class="form-label") }}
-                    {{ form.adjunto(class="form-control") }}
-                    <small class="text-muted">Formatos permitidos: PDF, PNG, JPG, JPEG, DOC, DOCX, XLS, XLSX. Máximo 16MB.</small>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('documentos.lista_documentos') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cancelar
-                    </a>
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -144,7 +215,7 @@
             cargarPersonasPorArea('#area_origen_id', '#persona_origen_id');
         });
         
-        // Seleccionar automáticamente el área del usuario actual
+        // Cargar automáticamente las personas si ya hay un área seleccionada
         if ($('#area_origen_id').val() > 0) {
             cargarPersonasPorArea('#area_origen_id', '#persona_origen_id');
         }

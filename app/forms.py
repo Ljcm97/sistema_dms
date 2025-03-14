@@ -250,3 +250,12 @@ class AreaForm(FlaskForm):
     descripcion = TextAreaField('Descripción')
     activo = BooleanField('Activo', default=True)
     submit = SubmitField('Guardar')
+
+class ZonaEconomicaForm(FlaskForm):
+    """
+    Formulario para crear/editar zonas económicas
+    """
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(1, 100)])
+    descripcion = TextAreaField('Descripción')
+    activo = BooleanField('Activo', default=True)
+    submit = SubmitField('Guardar')

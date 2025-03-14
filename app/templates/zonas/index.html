@@ -1,46 +1,30 @@
 {% extends 'base.html' %}
 
-{% block title %}Gestión de Tipos de Documento{% endblock %}
+{% block title %}Gestión de Zonas Económicas{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
-            <h1 class="h3 mb-0 text-gray-800">Gestión de Tipos de Documento</h1>
-            <a href="{{ url_for('tipos.crear') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nuevo Tipo de Documento
+            <h1 class="h3 mb-0 text-gray-800">Gestión de Zonas Económicas</h1>
+            <a href="{{ url_for('zonas.crear') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nueva Zona Económica
             </a>
         </div>
     </div>
 
     <!-- Tarjetas de Resumen -->
     <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-6 col-md-12 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Tipos</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tipos }}</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Zonas Económicas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_zonas }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tipos Activos</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ activos }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            <i class="fas fa-map-marker-alt fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -48,25 +32,15 @@
         </div>
 
         <div class="col-xl-6 col-md-12 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tipos Más Utilizados</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                {% if tipos_uso %}
-                                <ul class="list-unstyled">
-                                    {% for t in tipos_uso %}
-                                    <li>{{ t.nombre }} ({{ t.num_documentos }} documentos)</li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <p class="mb-0">No hay datos disponibles</p>
-                                {% endif %}
-                            </div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Zonas Económicas Activas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ activas }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-list-ol fa-2x text-gray-300"></i>
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -77,17 +51,17 @@
     <!-- Filtro de búsqueda -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Buscar Tipos de Documento</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Buscar Zonas Económicas</h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ url_for('tipos.index') }}">
+            <form method="GET" action="{{ url_for('zonas.index') }}">
                 <div class="input-group">
                     <input type="text" class="form-control" name="search" placeholder="Buscar por nombre..." value="{{ search }}">
                     <button class="btn btn-primary" type="submit">
                         <i class="fas fa-search"></i> Buscar
                     </button>
                     {% if search %}
-                    <a href="{{ url_for('tipos.index') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('zonas.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Limpiar
                     </a>
                     {% endif %}
@@ -96,13 +70,13 @@
         </div>
     </div>
 
-    <!-- Tabla de Tipos de Documento -->
+    <!-- Tabla de Zonas Económicas -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Tipos de Documento</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Zonas Económicas</h6>
         </div>
         <div class="card-body">
-            {% if tipos %}
+            {% if zonas %}
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead class="bg-light">
@@ -114,22 +88,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for tipo in tipos %}
+                        {% for zona in zonas %}
                         <tr>
-                            <td>{{ tipo.nombre }}</td>
-                            <td>{{ tipo.descripcion or 'N/A' }}</td>
+                            <td>{{ zona.nombre }}</td>
+                            <td>{{ zona.descripcion or 'N/A' }}</td>
                             <td>
-                                {% if tipo.activo %}
-                                <span class="badge bg-success">Activo</span>
+                                {% if zona.activo %}
+                                <span class="badge bg-success">Activa</span>
                                 {% else %}
-                                <span class="badge bg-danger">Inactivo</span>
+                                <span class="badge bg-danger">Inactiva</span>
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{{ url_for('tipos.editar', id=tipo.id) }}" class="btn btn-sm btn-info" title="Editar">
+                                <a href="{{ url_for('zonas.editar', id=zona.id) }}" class="btn btn-sm btn-info" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form class="d-inline" method="POST" action="{{ url_for('tipos.eliminar', id=tipo.id) }}" onsubmit="return confirmarEliminacion(event, '¿Está seguro de que desea eliminar este tipo de documento?')">
+                                <form class="d-inline" method="POST" action="{{ url_for('zonas.eliminar', id=zona.id) }}" onsubmit="return confirmarEliminacion(event, '¿Está seguro de que desea eliminar esta zona económica?')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
                                         <i class="fas fa-trash"></i>
@@ -148,7 +122,7 @@
                 <ul class="pagination justify-content-center">
                     {% if pagination.has_prev %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('tipos.index', page=pagination.prev_num, search=search) }}">
+                        <a class="page-link" href="{{ url_for('zonas.index', page=pagination.prev_num, search=search) }}">
                             &laquo; Anterior
                         </a>
                     </li>
@@ -162,7 +136,7 @@
                         {% if page %}
                             {% if page != pagination.page %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('tipos.index', page=page, search=search) }}">
+                                <a class="page-link" href="{{ url_for('zonas.index', page=page, search=search) }}">
                                     {{ page }}
                                 </a>
                             </li>
@@ -180,7 +154,7 @@
 
                     {% if pagination.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('tipos.index', page=pagination.next_num, search=search) }}">
+                        <a class="page-link" href="{{ url_for('zonas.index', page=pagination.next_num, search=search) }}">
                             Siguiente &raquo;
                         </a>
                     </li>
@@ -193,7 +167,7 @@
             </nav>
             {% endif %}
             {% else %}
-            <p class="text-center">No se encontraron tipos de documento.</p>
+            <p class="text-center">No se encontraron zonas económicas.</p>
             {% endif %}
         </div>
     </div>

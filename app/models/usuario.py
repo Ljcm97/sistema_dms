@@ -49,6 +49,13 @@ class Usuario(UserMixin, db.Model):
     movimientos = db.relationship('HistorialMovimiento', 
                                  backref='usuario', 
                                  lazy='dynamic')
+    # Relación con Privilegio corregida para evitar ambigüedad
+    privilegios = db.relationship(
+        'Privilegio', 
+        foreign_keys='Privilegio.usuario_id', 
+        backref=db.backref('usuario', uselist=False),
+        uselist=False
+    )
     
     @property
     def password(self):
@@ -92,8 +99,7 @@ class Usuario(UserMixin, db.Model):
             return True
         
         # Verificar privilegios especiales
-        privilegio = self.privilegios
-        if privilegio and privilegio.puede_registrar_documentos:
+        if self.privilegios and self.privilegios.puede_registrar_documentos:
             return True
         
         # Verificar si el usuario tiene rol de recepción (insensible a mayúsculas/minúsculas)
@@ -111,8 +117,7 @@ class Usuario(UserMixin, db.Model):
             return True
             
         # Verificar privilegios especiales
-        privilegio = self.privilegios
-        if privilegio and privilegio.puede_ver_documentos_area:
+        if self.privilegios and self.privilegios.puede_ver_documentos_area:
             return True
             
         # Verificar si el usuario tiene rol de recepción (insensible a mayúsculas/minúsculas)
@@ -123,6 +128,7 @@ class Usuario(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<Usuario {self.username}>'
+
 
 @login_manager.user_loader
 def load_user(user_id):

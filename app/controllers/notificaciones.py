@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, redirect, url_for
+from flask import Blueprint, jsonify, redirect, url_for, request
 from flask_login import login_required, current_user
 from app import db
 from app.models.notificacion import Notificacion
+from app.models.documento import Documento
 
 # Crear blueprint
 notificaciones_bp = Blueprint('notificaciones', __name__, url_prefix='/notificaciones')
@@ -41,3 +42,16 @@ def marcar_leida(id):
         return redirect(url_for('documentos.detalle_documento', id=notificacion.documento_id))
     
     return redirect(url_for('documentos.dashboard'))
+
+@notificaciones_bp.route('/count')
+@login_required
+def count():
+    """
+    Retorna solamente el conteo de notificaciones no leídas
+    """
+    count = Notificacion.query.filter_by(
+        usuario_id=current_user.id,
+        leida=False
+    ).count()
+    
+    return jsonify({'count': count})

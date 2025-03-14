@@ -26,11 +26,16 @@ class Notificacion(db.Model):
         """
         Crear una notificación para un documento
         """
-        documento = db.session.get(db.models.Documento, documento_id)
+        from app.models.documento import Documento
+        documento = Documento.query.get(documento_id)
+        
+        if not documento:
+            return None
+            
         if accion == "recibido":
-            mensaje = f"Ha recibido el documento {documento.radicado}"
+            mensaje = f"Se te ha asignado el documento {documento.radicado}"
         elif accion == "transferido":
-            mensaje = f"El documento {documento.radicado} ha sido transferido"
+            mensaje = f"El documento {documento.radicado} ha sido transferido a tu área"
         elif accion == "rechazado":
             mensaje = f"El documento {documento.radicado} ha sido rechazado"
         else:

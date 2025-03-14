@@ -4,6 +4,7 @@ from app import db
 from app.models.usuario import Usuario, Rol
 from app.models.persona import Persona
 from app.models.area import Area
+from app.models.privilegio import Privilegio
 from app.forms import UsuarioForm, PersonaForm
 from werkzeug.security import generate_password_hash
 import datetime
@@ -341,18 +342,15 @@ def privilegios():
     page = request.args.get('page', 1, type=int)
     
     # Obtener todos los usuarios con sus privilegios
-    from app.models.privilegio import Privilegio
-    from sqlalchemy.orm import joinedload
-    
-    usuarios = Usuario.query.options(
-        joinedload(Usuario.persona),
-        joinedload(Usuario.rol),
-        joinedload(Usuario.privilegios)
-    ).order_by(Usuario.username).paginate(
+    usuarios = Usuario.query.order_by(Usuario.username).paginate(
         page=page,
         per_page=current_app.config['ITEMS_PER_PAGE'],
         error_out=False
     )
+    
+    # Cargar los privilegios manualmente para cada usuario
+    for usuario in usuarios.items:
+        usuario.privilegio = Privilegio.query.filter_by(usuario_id=usuario.id).first()
     
     return render_template('admin/privilegios.html',
                           title='Gestión de Privilegios',
@@ -377,8 +375,6 @@ def actualizar_privilegio(usuario_id):
         flash('No se pueden modificar privilegios de superadministradores', 'warning')
         return redirect(url_for('admin.privilegios'))
     
-    from app.models.privilegio import Privilegio
-    
     # Obtener el privilegio actual o crear uno nuevo
     privilegio = Privilegio.query.filter_by(usuario_id=usuario_id).first()
     if not privilegio:
@@ -387,7 +383,10 @@ def actualizar_privilegio(usuario_id):
     
     # Actualizar privilegios
     puede_registrar = request.form.get('puede_registrar_documentos') == 'on'
+    puede_ver = request.form.get('puede_ver_documentos_area') == 'on'
+    
     privilegio.puede_registrar_documentos = puede_registrar
+    privilegio.puede_ver_documentos_area = puede_ver
     
     db.session.commit()
     

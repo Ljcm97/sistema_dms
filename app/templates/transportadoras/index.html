@@ -130,6 +130,7 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <form class="d-inline" method="POST" action="{{ url_for('transportadoras.eliminar', id=transportadora.id) }}" onsubmit="return confirmarEliminacion(event, '¿Está seguro de que desea eliminar esta transportadora?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
