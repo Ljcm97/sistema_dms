@@ -326,3 +326,70 @@ def api_personas_por_area(area_id):
         'id': p.id,
         'nombre_completo': p.nombre_completo
     } for p in personas])
+
+@admin_bp.route('/privilegios')
+@login_required
+def privilegios():
+    """
+    Gestión de privilegios de usuarios
+    """
+    # Verificar que el usuario sea superadministrador
+    if not current_user.is_superadmin():
+        flash('No tienes permisos para acceder a esta sección', 'danger')
+        return redirect(url_for('documentos.dashboard'))
+    
+    page = request.args.get('page', 1, type=int)
+    
+    # Obtener todos los usuarios con sus privilegios
+    from app.models.privilegio import Privilegio
+    from sqlalchemy.orm import joinedload
+    
+    usuarios = Usuario.query.options(
+        joinedload(Usuario.persona),
+        joinedload(Usuario.rol),
+        joinedload(Usuario.privilegios)
+    ).order_by(Usuario.username).paginate(
+        page=page,
+        per_page=current_app.config['ITEMS_PER_PAGE'],
+        error_out=False
+    )
+    
+    return render_template('admin/privilegios.html',
+                          title='Gestión de Privilegios',
+                          usuarios=usuarios.items,
+                          pagination=usuarios)
+
+@admin_bp.route('/privilegios/actualizar/<int:usuario_id>', methods=['POST'])
+@login_required
+def actualizar_privilegio(usuario_id):
+    """
+    Actualizar privilegios de un usuario
+    """
+    # Verificar que el usuario sea superadministrador
+    if not current_user.is_superadmin():
+        flash('No tienes permisos para esta acción', 'danger')
+        return redirect(url_for('documentos.dashboard'))
+    
+    usuario = Usuario.query.get_or_404(usuario_id)
+    
+    # No se pueden modificar privilegios de superadministradores
+    if usuario.is_superadmin():
+        flash('No se pueden modificar privilegios de superadministradores', 'warning')
+        return redirect(url_for('admin.privilegios'))
+    
+    from app.models.privilegio import Privilegio
+    
+    # Obtener el privilegio actual o crear uno nuevo
+    privilegio = Privilegio.query.filter_by(usuario_id=usuario_id).first()
+    if not privilegio:
+        privilegio = Privilegio(usuario_id=usuario_id, creado_por=current_user.id)
+        db.session.add(privilegio)
+    
+    # Actualizar privilegios
+    puede_registrar = request.form.get('puede_registrar_documentos') == 'on'
+    privilegio.puede_registrar_documentos = puede_registrar
+    
+    db.session.commit()
+    
+    flash(f'Privilegios del usuario {usuario.username} actualizados correctamente', 'success')
+    return redirect(url_for('admin.privilegios'))

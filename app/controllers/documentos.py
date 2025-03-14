@@ -144,13 +144,20 @@ def lista_documentos():
     salida_form.area_origen_id.default = current_user.persona.area_id
     salida_form.process()  # Procesar el formulario con los valores predeterminados
     
+    # Verificar si el usuario puede crear documentos basado en su rol
+    # Utilizamos el método puede_registrar_documentos()
+    puede_crear_documentos = current_user.puede_registrar_documentos()
+    
+    current_app.logger.info(f"¿Puede crear documentos?: {puede_crear_documentos}")
+    
     return render_template('documentos/lista.html',
                           title='Documentos',
                           documentos=pagination.items,
                           pagination=pagination,
                           form=form,
                           entrada_form=entrada_form,
-                          salida_form=salida_form)
+                          salida_form=salida_form,
+                          puede_crear_documentos=puede_crear_documentos)
 
 @documentos_bp.route('/documentos/entrada', methods=['POST'])
 @login_required
@@ -158,6 +165,11 @@ def registrar_entrada():
     """
     Registrar un nuevo documento entrante
     """
+    # Verificar permisos
+    if not current_user.puede_registrar_documentos():
+        flash('No tienes permisos para registrar documentos entrantes.', 'danger')
+        return redirect(url_for('documentos.lista_documentos'))
+    
     form = DocumentoEntradaForm()
     
     if form.validate_on_submit():
@@ -231,7 +243,7 @@ def detalle_documento(id):
         return redirect(url_for('documentos.lista_documentos'))
     
     # Si no es rol de Recepción, verificar si está asignado al usuario
-    if not current_user.is_superadmin() and current_user.rol.nombre != 'Recepción':
+    if not current_user.is_superadmin() and not current_user.puede_ver_documentos_area():
         if documento.persona_actual_id and documento.persona_actual_id != current_user.persona.id:
             flash('No tienes permisos para ver este documento', 'danger')
             return redirect(url_for('documentos.lista_documentos'))
@@ -247,7 +259,7 @@ def detalle_documento(id):
     puede_transferir = (documento.area_actual_id == current_user.persona.area_id)
     
     # Si no es rol de Recepción, solo puede transferir si está asignado a él
-    if not current_user.is_superadmin() and current_user.rol.nombre != 'Recepción':
+    if not current_user.is_superadmin() and not current_user.puede_ver_documentos_area():
         puede_transferir = puede_transferir and (documento.persona_actual_id == current_user.persona.id or documento.persona_actual_id is None)
     
     # Verificar si se puede aceptar o rechazar (solo destinatarios)
@@ -289,7 +301,7 @@ def transferir_documento():
             return redirect(url_for('documentos.detalle_documento', id=documento_id))
         
         # Si no es rol de Recepción, verificar si está asignado al usuario
-        if not current_user.is_superadmin() and current_user.rol.nombre != 'Recepción':
+        if not current_user.is_superadmin() and not current_user.puede_ver_documentos_area():
             if documento.persona_actual_id and documento.persona_actual_id != current_user.persona.id:
                 flash('No tienes permisos para transferir este documento', 'danger')
                 return redirect(url_for('documentos.detalle_documento', id=documento_id))
@@ -369,7 +381,7 @@ def aceptar_documento(id):
         return redirect(url_for('documentos.lista_documentos'))
     
     # Si no es rol de Recepción y el documento está asignado a una persona específica
-    if not current_user.is_superadmin() and current_user.rol.nombre != 'Recepción':
+    if not current_user.is_superadmin() and not current_user.puede_ver_documentos_area():
         if documento.persona_actual_id and documento.persona_actual_id != current_user.persona.id:
             flash('No tienes permisos para aceptar este documento', 'danger')
             return redirect(url_for('documentos.lista_documentos'))
@@ -419,7 +431,7 @@ def rechazar_documento(id):
         return redirect(url_for('documentos.lista_documentos'))
     
     # Si no es rol de Recepción y el documento está asignado a una persona específica
-    if not current_user.is_superadmin() and current_user.rol.nombre != 'Recepción':
+    if not current_user.is_superadmin() and not current_user.puede_ver_documentos_area():
         if documento.persona_actual_id and documento.persona_actual_id != current_user.persona.id:
             flash('No tienes permisos para rechazar este documento', 'danger')
             return redirect(url_for('documentos.lista_documentos'))
@@ -487,6 +499,11 @@ def registrar_salida():
     """
     Registrar un nuevo documento saliente
     """
+    # Verificar permisos
+    if not current_user.puede_registrar_documentos():
+        flash('No tienes permisos para registrar documentos salientes.', 'danger')
+        return redirect(url_for('documentos.lista_documentos'))
+    
     form = DocumentoSalidaForm()
     
     if form.validate_on_submit():

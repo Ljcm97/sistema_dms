@@ -116,12 +116,35 @@ class Documento(db.Model):
     @classmethod
     def generar_radicado(cls):
         """
-        Generar un nuevo número de radicado
+        Generar un nuevo número de radicado asegurando que sea único
         """
-        from sqlalchemy import text
-        result = db.session.execute(text("CALL GenerarRadicado(@radicado)"))
-        result = db.session.execute(text("SELECT @radicado"))
-        radicado = result.fetchone()[0]
+        import datetime
+        
+        # Generar el prefijo con la fecha de hoy
+        today = datetime.date.today()
+        prefix = today.strftime("%Y%m%d")
+        
+        # Buscar el último número de radicado para hoy
+        last_doc = cls.query.filter(
+            cls.radicado.like(f"{prefix}-%")
+        ).order_by(cls.radicado.desc()).first()
+        
+        if last_doc:
+            # Obtener el número y añadir 1
+            last_num = int(last_doc.radicado.split('-')[1])
+            new_num = last_num + 1
+        else:
+            # Primer documento del día
+            new_num = 1
+        
+        # Formatear el radicado con el nuevo número
+        radicado = f"{prefix}-{new_num:04d}"
+        
+        # Verificar que no exista ya (por si acaso)
+        while cls.query.filter_by(radicado=radicado).first():
+            new_num += 1
+            radicado = f"{prefix}-{new_num:04d}"
+        
         return radicado
     
     def transferir(self, area_id, persona_id, estado_id, observaciones, usuario_id):

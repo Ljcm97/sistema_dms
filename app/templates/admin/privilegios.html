@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Privilegios de Usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">Gestión de Privilegios</h1>
+            <p class="text-muted">Administra los privilegios especiales de los usuarios</p>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Privilegios por Usuario</h6>
+        </div>
+        <div class="card-body">
+            {% if usuarios %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Persona</th>
+                            <th>Área</th>
+                            <th>Rol</th>
+                            <th>Puede Registrar Documentos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.username }}</td>
+                            <td>{{ usuario.persona.nombre_completo }}</td>
+                            <td>{{ usuario.persona.area.nombre }}</td>
+                            <td>{{ usuario.rol.nombre }}</td>
+                            <td>
+                                {% if usuario.is_superadmin() %}
+                                <span class="badge bg-success">Sí (Superadmin)</span>
+                                {% elif usuario.privilegios and usuario.privilegios.puede_registrar_documentos %}
+                                <span class="badge bg-success">Sí</span>
+                                {% else %}
+                                <span class="badge bg-danger">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not usuario.is_superadmin() %}
+                                <form action="{{ url_for('admin.actualizar_privilegio', usuario_id=usuario.id) }}" method="POST" class="d-inline">
+                                    <div class="form-check form-switch d-inline-block me-2">
+                                        <input class="form-check-input" type="checkbox" id="puede_registrar_{{ usuario.id }}" name="puede_registrar_documentos"
+                                            {% if usuario.privilegios and usuario.privilegios.puede_registrar_documentos %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="puede_registrar_{{ usuario.id }}">Registrar</label>
+                                    </div>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">Superadmin</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Paginación">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.privilegios', page=pagination.prev_num) }}">
+                            &laquo; Anterior
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Anterior</span>
+                    </li>
+                    {% endif %}
+
+                    {% for page in pagination.iter_pages() %}
+                        {% if page %}
+                            {% if page != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.privilegios', page=page) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.privilegios', page=pagination.next_num) }}">
+                            Siguiente &raquo;
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Siguiente &raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <p class="text-center">No hay usuarios registrados.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-0 text-gray-800">Lista de Documentos</h1>
+            {% if puede_crear_documentos %}
             <div>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEntrada">
                     <i class="fas fa-file-import"></i> Entrada
@@ -15,6 +16,7 @@
                     <i class="fas fa-file-export"></i> Salida
                 </button>
             </div>
+            {% endif %}
         </div>
     </div>
 
@@ -180,6 +182,7 @@
 </div>
 
 <!-- Modal para Documento Entrante -->
+{% if puede_crear_documentos %}
 <div class="modal fade" id="modalEntrada" tabindex="-1" aria-labelledby="modalEntradaLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -392,6 +395,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

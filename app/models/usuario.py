@@ -83,6 +83,44 @@ class Usuario(UserMixin, db.Model):
         """
         return self.rol.es_superadmin
     
+    def puede_registrar_documentos(self):
+        """
+        Verificar si el usuario puede registrar documentos
+        """
+        # Los superadministradores siempre pueden
+        if self.is_superadmin():
+            return True
+        
+        # Verificar privilegios especiales
+        privilegio = self.privilegios
+        if privilegio and privilegio.puede_registrar_documentos:
+            return True
+        
+        # Verificar si el usuario tiene rol de recepción (insensible a mayúsculas/minúsculas)
+        if self.rol and self.rol.nombre.lower() in ['recepción', 'recepcion']:
+            return True
+            
+        return False
+    
+    def puede_ver_documentos_area(self):
+        """
+        Verifica si el usuario puede ver todos los documentos de su área
+        Usuarios con rol de superadmin o recepción pueden ver todos los documentos del área
+        """
+        if self.is_superadmin():
+            return True
+            
+        # Verificar privilegios especiales
+        privilegio = self.privilegios
+        if privilegio and privilegio.puede_ver_documentos_area:
+            return True
+            
+        # Verificar si el usuario tiene rol de recepción (insensible a mayúsculas/minúsculas)
+        if self.rol and self.rol.nombre.lower() in ['recepción', 'recepcion']:
+            return True
+            
+        return False
+    
     def __repr__(self):
         return f'<Usuario {self.username}>'
 
