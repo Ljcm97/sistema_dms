@@ -104,4 +104,12 @@
                 
                 <div class="d-flex justify-content-between">
                     <a href="{{ url_for('admin.personas') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cance
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

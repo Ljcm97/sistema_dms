@@ -65,6 +65,7 @@
                             <th>Email</th>
                             <th>Teléfono</th>
                             <th>Área</th>
+                            <th>Cargo</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -77,6 +78,7 @@
                             <td>{{ persona.email or 'N/A' }}</td>
                             <td>{{ persona.telefono or 'N/A' }}</td>
                             <td>{{ persona.area.nombre }}</td>
+                            <td>{{ persona.cargo.nombre if persona.cargo else 'N/A' }}</td>
                             <td>
                                 {% if persona.activo %}
                                 <span class="badge bg-success">Activo</span>

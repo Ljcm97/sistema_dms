@@ -71,16 +71,30 @@
                     </div>
                 </div>
                 
-                <div class="mb-3">
-                    {{ form.area_id.label(class="form-label") }}
-                    {{ form.area_id(class="form-select") }}
-                    {% if form.area_id.errors %}
-                        <div class="text-danger">
-                            {% for error in form.area_id.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.area_id.label(class="form-label") }}
+                        {{ form.area_id(class="form-select") }}
+                        {% if form.area_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.area_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.cargo_id.label(class="form-label") }}
+                        {{ form.cargo_id(class="form-select") }}
+                        {% if form.cargo_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.cargo_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <div class="mb-3 form-check">

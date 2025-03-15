@@ -49,6 +49,7 @@
                             <th>Usuario</th>
                             <th>Nombre Completo</th>
                             <th>Área</th>
+                            <th>Cargo</th>
                             <th>Rol</th>
                             <th>Estado</th>
                             <th>Último Acceso</th>
@@ -61,6 +62,7 @@
                             <td>{{ usuario.username }}</td>
                             <td>{{ usuario.persona.nombre_completo }}</td>
                             <td>{{ usuario.persona.area.nombre }}</td>
+                            <td>{{ usuario.persona.cargo.nombre if usuario.persona.cargo else 'N/A' }}</td>
                             <td>{{ usuario.rol.nombre }}</td>
                             <td>
                                 {% if usuario.activo %}

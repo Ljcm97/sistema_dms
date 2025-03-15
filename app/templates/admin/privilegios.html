@@ -23,6 +23,7 @@
                         <tr>
                             <th>Usuario</th>
                             <th>Persona</th>
+                            <th>Cargo</th>
                             <th>Área</th>
                             <th>Rol</th>
                             <th>Puede Registrar Documentos</th>
@@ -35,6 +36,7 @@
                         <tr>
                             <td>{{ usuario.username }}</td>
                             <td>{{ usuario.persona.nombre_completo }}</td>
+                            <td>{{ usuario.persona.cargo.nombre if usuario.persona.cargo else 'N/A' }}</td>
                             <td>{{ usuario.persona.area.nombre }}</td>
                             <td>{{ usuario.rol.nombre }}</td>
                             <td>

@@ -14,7 +14,7 @@ class Cargo(db.Model):
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relaciones
-    personas = db.relationship('Persona', backref='cargo', lazy='dynamic')
+    # personas = db.relationship('Persona', backref='cargo', lazy='dynamic')
     
     def __repr__(self):
         return f'<Cargo {self.nombre}>'

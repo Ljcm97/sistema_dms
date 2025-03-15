@@ -13,7 +13,7 @@ class Persona(db.Model):
     email = db.Column(db.String(100), unique=True)
     telefono = db.Column(db.String(20))
     area_id = db.Column(db.Integer, db.ForeignKey('areas.id'), nullable=False)
-    cargo_id = db.Column(db.Integer, db.ForeignKey('cargos.id'))  # Nueva relación con Cargo
+    cargo_id = db.Column(db.Integer, db.ForeignKey('cargos.id'))  # Relación con Cargo
     activo = db.Column(db.Boolean, default=True)
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -23,6 +23,8 @@ class Persona(db.Model):
                                         foreign_keys='Documento.persona_actual_id', 
                                         backref='persona_actual', 
                                         lazy='dynamic')
+    # Modificado para eliminar el backref duplicado
+    cargo = db.relationship('Cargo', foreign_keys=[cargo_id])
     
     @property
     def nombre_completo(self):
