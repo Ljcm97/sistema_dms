@@ -48,6 +48,7 @@ def create_app(config_name=None):
     from app.controllers.transportadoras import transportadoras_bp
     from app.controllers.tipos_documentos import tipos_bp
     from app.controllers.areas import areas_bp
+    from app.controllers.cargos import cargos_bp
     from app.controllers.zonas_economicas import zonas_bp
     from app.controllers.notificaciones import notificaciones_bp
     
@@ -59,6 +60,7 @@ def create_app(config_name=None):
     app.register_blueprint(transportadoras_bp)
     app.register_blueprint(tipos_bp)
     app.register_blueprint(areas_bp)
+    app.register_blueprint(cargos_bp)
     app.register_blueprint(zonas_bp)
     app.register_blueprint(notificaciones_bp)
     
@@ -72,6 +74,7 @@ def create_app(config_name=None):
         from app.models.documento import Documento, TipoDocumento, Transportadora, EstadoDocumento
         from app.models.area import Area
         from app.models.persona import Persona
+        from app.models.cargo import Cargo
         from app.models.notificacion import Notificacion
         from app.models.privilegio import Privilegio
         return {
@@ -83,6 +86,7 @@ def create_app(config_name=None):
             'EstadoDocumento': EstadoDocumento,
             'Area': Area,
             'Persona': Persona,
+            'Cargo': Cargo,
             'Notificacion': Notificacion,
             'Privilegio': Privilegio
         }

@@ -13,6 +13,7 @@ class Persona(db.Model):
     email = db.Column(db.String(100), unique=True)
     telefono = db.Column(db.String(20))
     area_id = db.Column(db.Integer, db.ForeignKey('areas.id'), nullable=False)
+    cargo_id = db.Column(db.Integer, db.ForeignKey('cargos.id'))  # Nueva relación con Cargo
     activo = db.Column(db.Boolean, default=True)
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     

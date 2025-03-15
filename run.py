@@ -5,6 +5,7 @@ from app.models.area import Area
 from app.models.persona import Persona
 from app.models.documento import Documento, Transportadora, TipoDocumento, EstadoDocumento
 from app.models.historial import HistorialMovimiento
+from app.models.cargo import Cargo
 from flask_migrate import Migrate
 
 app = create_app()
@@ -25,7 +26,8 @@ def make_shell_context():
         'Transportadora': Transportadora,
         'TipoDocumento': TipoDocumento,
         'EstadoDocumento': EstadoDocumento,
-        'HistorialMovimiento': HistorialMovimiento
+        'HistorialMovimiento': HistorialMovimiento,
+        'Cargo': Cargo
     }
 
 @app.cli.command("create-superadmin")
@@ -183,6 +185,23 @@ def init_db():
         
         db.session.commit()
         print("Áreas creadas correctamente.")
+    
+    # Crear cargos si no existen
+    if Cargo.query.count() == 0:
+        print("Creando cargos...")
+        cargos = [
+            'Gerente', 'Director', 'Coordinador', 'Analista',
+            'Auxiliar', 'Asistente', 'Secretaria', 'Operario',
+            'Técnico', 'Supervisor', 'Jefe', 'Contador',
+            'Auditor', 'Desarrollador', 'Líder', 'Conductor'
+        ]
+        
+        for c in cargos:
+            cargo = Cargo(nombre=c)
+            db.session.add(cargo)
+        
+        db.session.commit()
+        print("Cargos creados correctamente.")
     
     print("Inicialización de la base de datos completada.")
 

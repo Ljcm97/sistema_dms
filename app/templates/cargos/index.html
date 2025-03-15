@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Cargos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Gestión de Cargos</h1>
+            <a href="{{ url_for('cargos.crear') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Cargo
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Cargos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_cargos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-id-card fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Cargos Activos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ activos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Cargos Más Utilizados</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                {% if cargos_uso %}
+                                <ul class="list-unstyled">
+                                    {% for c in cargos_uso %}
+                                    <li>{{ c.nombre }} ({{ c.num_personas }} personas)</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <p class="mb-0">No hay datos disponibles</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtro de búsqueda -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Buscar Cargos</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('cargos.index') }}">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Buscar por nombre..." value="{{ search }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                    {% if search %}
+                    <a href="{{ url_for('cargos.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Cargos -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Cargos</h6>
+        </div>
+        <div class="card-body">
+            {% if cargos %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cargo in cargos %}
+                        <tr>
+                            <td>{{ cargo.nombre }}</td>
+                            <td>{{ cargo.descripcion or 'N/A' }}</td>
+                            <td>
+                                {% if cargo.activo %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('cargos.editar', id=cargo.id) }}" class="btn btn-sm btn-info" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form class="d-inline" method="POST" action="{{ url_for('cargos.eliminar', id=cargo.id) }}" onsubmit="return confirmarEliminacion(event, '¿Está seguro de que desea eliminar este cargo?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Paginación">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('cargos.index', page=pagination.prev_num, search=search) }}">
+                            &laquo; Anterior
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Anterior</span>
+                    </li>
+                    {% endif %}
+
+                    {% for page in pagination.iter_pages() %}
+                        {% if page %}
+                            {% if page != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('cargos.index', page=page, search=search) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('cargos.index', page=pagination.next_num, search=search) }}">
+                            Siguiente &raquo;
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Siguiente &raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <p class="text-center">No se encontraron cargos.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

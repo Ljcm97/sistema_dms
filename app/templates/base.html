@@ -74,6 +74,16 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="catalogosDropdown">
                             <li>
+                                <a class="dropdown-item" href="{{ url_for('areas.index') }}">
+                                    <i class="fas fa-building"></i> Áreas
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('cargos.index') }}">
+                                    <i class="fas fa-id-card"></i> Cargos
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{{ url_for('transportadoras.index') }}">
                                     <i class="fas fa-truck"></i> Transportadoras
                                 </a>

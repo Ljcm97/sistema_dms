@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Crear Transportadora{% endblock %}
+{% block title %}Crear Cargo{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="h3 mb-0 text-gray-800">Crear Nueva Transportadora</h1>
-            <p class="text-muted">Complete el formulario para registrar una nueva transportadora</p>
+            <h1 class="h3 mb-0 text-gray-800">Crear Nuevo Cargo</h1>
+            <p class="text-muted">Complete el formulario para registrar un nuevo cargo</p>
         </div>
     </div>
 
@@ -16,12 +16,12 @@
             <h6 class="m-0 font-weight-bold text-primary">Formulario de Creación</h6>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ url_for('transportadoras.crear') }}">
+            <form method="POST" action="{{ url_for('cargos.crear') }}">
                 {{ form.hidden_tag() }}
                 
                 <div class="mb-3">
                     {{ form.nombre.label(class="form-label") }}
-                    {{ form.nombre(class="form-control", placeholder="Nombre de la transportadora") }}
+                    {{ form.nombre(class="form-control", placeholder="Nombre del cargo") }}
                     {% if form.nombre.errors %}
                         <div class="text-danger">
                             {% for error in form.nombre.errors %}
@@ -49,7 +49,7 @@
                 </div>
                 
                 <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('transportadoras.index') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('cargos.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Cancelar
                     </a>
                     {{ form.submit(class="btn btn-primary") }}
