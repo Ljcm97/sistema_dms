@@ -11,184 +11,190 @@
                 <i class="fas fa-arrow-left"></i> Volver a Documentos
             </a>
         </div>
-        <div class="col-12">
-            <p class="text-muted">Ingrese la información del documento recibido</p>
+    </div>
+
+    <!-- Formulario de Registro -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">Formulario de Registro</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('documentos.registrar_entrada') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.fecha_recepcion.label(class="form-label") }}
+                        {{ form.fecha_recepcion(class="form-control", type="datetime-local") }}
+                        {% if form.fecha_recepcion.errors %}
+                            <div class="text-danger">
+                                {% for error in form.fecha_recepcion.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.transportadora_id.label(class="form-label") }}
+                        {{ form.transportadora_id(class="form-select") }}
+                        {% if form.transportadora_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.transportadora_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.numero_guia.label(class="form-label") }}
+                        {{ form.numero_guia(class="form-control", placeholder="Número de guía") }}
+                        {% if form.numero_guia.errors %}
+                            <div class="text-danger">
+                                {% for error in form.numero_guia.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.remitente.label(class="form-label") }}
+                        {{ form.remitente(class="form-control", placeholder="Nombre del remitente") }}
+                        {% if form.remitente.errors %}
+                            <div class="text-danger">
+                                {% for error in form.remitente.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.tipo_documento_id.label(class="form-label") }}
+                    {{ form.tipo_documento_id(class="form-select") }}
+                    {% if form.tipo_documento_id.errors %}
+                        <div class="text-danger">
+                            {% for error in form.tipo_documento_id.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.contenido.label(class="form-label") }}
+                    {{ form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
+                    {% if form.contenido.errors %}
+                        <div class="text-danger">
+                            {% for error in form.contenido.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.observaciones.label(class="form-label") }}
+                    {{ form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
+                    {% if form.observaciones.errors %}
+                        <div class="text-danger">
+                            {% for error in form.observaciones.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.area_destino_id.label(class="form-label") }}
+                        {{ form.area_destino_id(class="form-select", id="area_destino_id") }}
+                        {% if form.area_destino_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.area_destino_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {{ form.persona_destino_id.label(class="form-label") }}
+                        {{ form.persona_destino_id(class="form-select", id="persona_destino_id") }}
+                        {% if form.persona_destino_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.persona_destino_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="fas fa-undo"></i> Limpiar Formulario
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Registrar Documento
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Formulario de Registro -->
-        <div class="col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-primary text-white">
-                    <h6 class="m-0 font-weight-bold">Formulario de Registro</h6>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('documentos.registrar_entrada') }}" enctype="multipart/form-data">
-                        {{ form.hidden_tag() }}
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                {{ form.fecha_recepcion.label(class="form-label") }}
-                                {{ form.fecha_recepcion(class="form-control", type="datetime-local") }}
-                                {% if form.fecha_recepcion.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.fecha_recepcion.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                {{ form.transportadora_id.label(class="form-label") }}
-                                {{ form.transportadora_id(class="form-select") }}
-                                {% if form.transportadora_id.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.transportadora_id.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                {{ form.numero_guia.label(class="form-label") }}
-                                {{ form.numero_guia(class="form-control", placeholder="Número de guía") }}
-                                {% if form.numero_guia.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.numero_guia.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                {{ form.remitente.label(class="form-label") }}
-                                {{ form.remitente(class="form-control", placeholder="Nombre del remitente") }}
-                                {% if form.remitente.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.remitente.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.tipo_documento_id.label(class="form-label") }}
-                            {{ form.tipo_documento_id(class="form-select") }}
-                            {% if form.tipo_documento_id.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.tipo_documento_id.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.contenido.label(class="form-label") }}
-                            {{ form.contenido(class="form-control", rows=3, placeholder="Descripción del contenido") }}
-                            {% if form.contenido.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.contenido.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.observaciones.label(class="form-label") }}
-                            {{ form.observaciones(class="form-control", rows=2, placeholder="Observaciones adicionales") }}
-                            {% if form.observaciones.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.observaciones.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                {{ form.area_destino_id.label(class="form-label") }}
-                                {{ form.area_destino_id(class="form-select", id="area_destino_id") }}
-                                {% if form.area_destino_id.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.area_destino_id.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                {{ form.persona_destino_id.label(class="form-label") }}
-                                {{ form.persona_destino_id(class="form-select", id="persona_destino_id") }}
-                                {% if form.persona_destino_id.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.persona_destino_id.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.adjunto.label(class="form-label") }}
-                            {{ form.adjunto(class="form-control") }}
-                            <small class="text-muted">Formatos permitidos: PDF, PNG, JPG, JPEG, DOC, DOCX, XLS, XLSX. Máximo 16MB.</small>
-                            {% if form.adjunto.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.adjunto.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <button type="reset" class="btn btn-secondary">
-                                <i class="fas fa-undo"></i> Limpiar Formulario
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Registrar Documento
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <!-- Tabla de Documentos Entrantes Recientes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Documentos Entrantes Recientes</h6>
         </div>
-        
-        <!-- Ayuda e Información -->
-        <div class="col-lg-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">Información</h6>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Documentos Entrantes</h5>
-                    <p>Utilice este formulario para registrar documentos que llegan a la empresa.</p>
-                    <hr>
-                    <ul>
-                        <li>Complete todos los campos requeridos marcados con *.</li>
-                        <li>El radicado se genera automáticamente por el sistema.</li>
-                        <li>Al seleccionar un área destino, podrá elegir a una persona específica de esa área.</li>
-                        <li>El documento quedará registrado con estado "Recibido".</li>
-                    </ul>
-                    <hr>
-                    <div class="alert alert-warning">
-                        <i class="fas fa-info-circle"></i> Asegúrese de seleccionar correctamente el área y persona destino para facilitar el seguimiento del documento.
-                    </div>
-                </div>
+        <div class="card-body">
+            {% set documentos_entrantes = documentos|default([]) %}
+            {% if documentos_entrantes %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Radicado</th>
+                            <th>Fecha</th>
+                            <th>Remitente</th>
+                            <th>Tipo</th>
+                            <th>Área Destino</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documentos_entrantes %}
+                        <tr>
+                            <td>{{ doc.radicado }}</td>
+                            <td>{{ doc.fecha_recepcion.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ doc.remitente }}</td>
+                            <td>{{ doc.tipo_documento.nombre }}</td>
+                            <td>{{ doc.area_actual.nombre }}</td>
+                            <td>
+                                <span class="badge" style="background-color: {{ doc.estado.color }}">
+                                    {{ doc.estado.nombre }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('documentos.detalle_documento', id=doc.id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+            {% else %}
+            <p class="text-center">No hay documentos entrantes recientes.</p>
+            {% endif %}
         </div>
     </div>
 </div>

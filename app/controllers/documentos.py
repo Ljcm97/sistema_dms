@@ -1,10 +1,15 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app import db
-from app.models.documento import TipoDocumento, Documento, EstadoDocumento
+from app.models.documento import TipoDocumento, Documento, EstadoDocumento, Transportadora
 from app.forms import TipoDocumentoForm, DocumentoEntradaForm, DocumentoSalidaForm, TransferenciaDocumentoForm, BusquedaForm
-from sqlalchemy import func
+from sqlalchemy import func, desc
 from datetime import datetime, timedelta
+import os
+from werkzeug.utils import secure_filename
+from app.models.historial import HistorialMovimiento
+from app.models.area import Area
+from app.models.persona import Persona
 
 # Crear blueprint
 tipos_bp = Blueprint('tipos', __name__, url_prefix='/tipos')
@@ -70,113 +75,7 @@ def index():
                           activos=activos,
                           tipos_uso=tipos_uso)
 
-@tipos_bp.route('/crear', methods=['GET', 'POST'])
-@login_required
-def crear():
-    """
-    Crear un nuevo tipo de documento
-    """
-    # Verificar que el usuario sea superadministrador
-    if not current_user.is_superadmin():
-        flash('No tienes permisos para acceder a esta sección', 'danger')
-        return redirect(url_for('documentos.dashboard'))
-    
-    form = TipoDocumentoForm()
-    
-    if form.validate_on_submit():
-        # Verificar si ya existe un tipo con el mismo nombre
-        if TipoDocumento.query.filter(func.lower(TipoDocumento.nombre) == func.lower(form.nombre.data)).first():
-            flash('Ya existe un tipo de documento con este nombre', 'danger')
-            return render_template('tipos/crear.html', form=form, title='Crear Tipo de Documento')
-        
-        # Crear tipo de documento
-        tipo = TipoDocumento(
-            nombre=form.nombre.data,
-            descripcion=form.descripcion.data,
-            activo=form.activo.data
-        )
-        
-        db.session.add(tipo)
-        db.session.commit()
-        
-        flash(f'Tipo de documento {tipo.nombre} creado correctamente', 'success')
-        return redirect(url_for('tipos.index'))
-    
-    return render_template('tipos/crear.html', form=form, title='Crear Tipo de Documento')
-
-@tipos_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@login_required
-def editar(id):
-    """
-    Editar un tipo de documento existente
-    """
-    # Verificar que el usuario sea superadministrador
-    if not current_user.is_superadmin():
-        flash('No tienes permisos para acceder a esta sección', 'danger')
-        return redirect(url_for('documentos.dashboard'))
-    
-    tipo = TipoDocumento.query.get_or_404(id)
-    form = TipoDocumentoForm()
-    
-    if request.method == 'GET':
-        form.nombre.data = tipo.nombre
-        form.descripcion.data = tipo.descripcion
-        form.activo.data = tipo.activo
-    
-    if form.validate_on_submit():
-        # Verificar si ya existe otro tipo con el mismo nombre
-        duplicate = TipoDocumento.query.filter(
-            func.lower(TipoDocumento.nombre) == func.lower(form.nombre.data),
-            TipoDocumento.id != tipo.id
-        ).first()
-        
-        if duplicate:
-            flash('Ya existe otro tipo de documento con este nombre', 'danger')
-            return render_template('tipos/editar.html', form=form, tipo=tipo, title='Editar Tipo de Documento')
-        
-        # Actualizar tipo de documento
-        tipo.nombre = form.nombre.data
-        tipo.descripcion = form.descripcion.data
-        tipo.activo = form.activo.data
-        
-        db.session.commit()
-        
-        flash(f'Tipo de documento {tipo.nombre} actualizado correctamente', 'success')
-        return redirect(url_for('tipos.index'))
-    
-    return render_template('tipos/editar.html', form=form, tipo=tipo, title='Editar Tipo de Documento')
-
-@tipos_bp.route('/eliminar/<int:id>', methods=['POST'])
-@login_required
-def eliminar(id):
-    """
-    Eliminar un tipo de documento
-    """
-    # Verificar que el usuario sea superadministrador
-    if not current_user.is_superadmin():
-        flash('No tienes permisos para acceder a esta sección', 'danger')
-        return redirect(url_for('documentos.dashboard'))
-    
-    try:
-        tipo = TipoDocumento.query.get_or_404(id)
-        
-        # Verificar si el tipo está en uso
-        if tipo.documentos.count() > 0:
-            flash(f'No se puede eliminar el tipo de documento {tipo.nombre} porque está en uso', 'danger')
-            return redirect(url_for('tipos.index'))
-        
-        # Guardar nombre para mensaje
-        nombre = tipo.nombre
-        
-        db.session.delete(tipo)
-        db.session.commit()
-        
-        flash(f'Tipo de documento {nombre} eliminado correctamente', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error al eliminar: {str(e)}', 'danger')
-    
-    return redirect(url_for('tipos.index'))
+# ... Otras rutas de tipos_bp ...
 
 @documentos_bp.route('/')
 @login_required
@@ -310,11 +209,6 @@ def lista_documentos():
         error_out=False
     )
     
-    # Formularios para modales
-    from app.forms import DocumentoEntradaForm, DocumentoSalidaForm
-    entrada_form = DocumentoEntradaForm()
-    salida_form = DocumentoSalidaForm()
-    
     # Verificar si el usuario puede crear documentos
     puede_crear_documentos = current_user.puede_registrar_documentos()
     
@@ -323,8 +217,6 @@ def lista_documentos():
                           documentos=pagination.items,
                           pagination=pagination,
                           form=form,
-                          entrada_form=entrada_form,
-                          salida_form=salida_form,
                           puede_crear_documentos=puede_crear_documentos)
 
 @documentos_bp.route('/<int:id>')
@@ -384,18 +276,76 @@ def registrar_entrada():
         flash('No tienes permisos para registrar documentos', 'danger')
         return redirect(url_for('documentos.dashboard'))
     
-    from app.forms import DocumentoEntradaForm
     form = DocumentoEntradaForm()
     
     if form.validate_on_submit():
-        # Código para procesar el formulario
-        # ...
-        flash('Documento registrado correctamente', 'success')
-        return redirect(url_for('documentos.lista_documentos'))
+        try:
+            # Generar radicado único
+            radicado = Documento.generar_radicado()
+            
+            # Crear el documento
+            documento = Documento(
+                radicado=radicado,
+                fecha_recepcion=form.fecha_recepcion.data,
+                transportadora_id=form.transportadora_id.data if form.transportadora_id.data > 0 else None,
+                numero_guia=form.numero_guia.data,
+                remitente=form.remitente.data,
+                tipo_documento_id=form.tipo_documento_id.data,
+                contenido=form.contenido.data,
+                observaciones=form.observaciones.data,
+                area_actual_id=form.area_destino_id.data,
+                persona_actual_id=form.persona_destino_id.data if form.persona_destino_id.data > 0 else None,
+                estado_id=EstadoDocumento.query.filter_by(nombre='Recibido').first().id,
+                es_entrada=True,
+                usuario_creacion_id=current_user.id
+            )
+            
+            db.session.add(documento)
+            db.session.commit()
+            
+            # Registrar en el historial
+            historial = HistorialMovimiento(
+                documento_id=documento.id,
+                fecha_movimiento=documento.fecha_recepcion,
+                area_origen_id=current_user.persona.area_id,
+                persona_origen_id=current_user.persona_id,
+                area_destino_id=documento.area_actual_id,
+                persona_destino_id=documento.persona_actual_id,
+                estado_id=documento.estado_id,
+                observaciones=documento.observaciones,
+                usuario_id=current_user.id
+            )
+            
+            db.session.add(historial)
+            db.session.commit()
+            
+            # Crear notificación si hay persona destino
+            if documento.persona_actual_id:
+                from app.models.notificacion import Notificacion
+                Notificacion.crear_notificacion_documento(
+                    usuario_id=Usuario.query.filter_by(persona_id=documento.persona_actual_id).first().id if Usuario.query.filter_by(persona_id=documento.persona_actual_id).first() else None,
+                    documento_id=documento.id,
+                    accion="recibido"
+                )
+            
+            flash(f'Documento entrante registrado correctamente con radicado {radicado}', 'success')
+            return redirect(url_for('documentos.registrar_entrada'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Error al registrar documento entrante: {str(e)}')
+            flash(f'Error al registrar el documento: {str(e)}', 'danger')
+    
+    # Obtener documentos entrantes recientes
+    documentos = Documento.query.filter_by(
+        es_entrada=True,
+        usuario_creacion_id=current_user.id
+    ).order_by(Documento.creado_en.desc()).limit(10).all()
     
     return render_template('documentos/registrar_entrada.html',
                           title='Registrar Documento Entrante',
-                          form=form)
+                          form=form,
+                          documentos=documentos)
 
 @documentos_bp.route('/registrar-entrada-completo', methods=['GET', 'POST'])
 @login_required
@@ -416,18 +366,68 @@ def registrar_salida():
         flash('No tienes permisos para registrar documentos', 'danger')
         return redirect(url_for('documentos.dashboard'))
     
-    from app.forms import DocumentoSalidaForm
     form = DocumentoSalidaForm()
     
     if form.validate_on_submit():
-        # Código para procesar el formulario
-        # ...
-        flash('Documento registrado correctamente', 'success')
-        return redirect(url_for('documentos.lista_documentos'))
+        try:
+            # Generar radicado único
+            radicado = Documento.generar_radicado()
+            
+            # Crear el documento
+            documento = Documento(
+                radicado=radicado,
+                fecha_recepcion=form.fecha_envio.data,
+                transportadora_id=form.transportadora_id.data,
+                numero_guia=form.numero_guia.data,
+                remitente=form.destinatario.data,  # En salidas, el remitente es el destinatario
+                tipo_documento_id=form.tipo_documento_id.data,
+                contenido=form.contenido.data,
+                observaciones=form.observaciones.data,
+                area_actual_id=form.area_origen_id.data,
+                persona_actual_id=form.persona_origen_id.data if form.persona_origen_id.data > 0 else None,
+                estado_id=EstadoDocumento.query.filter_by(nombre='Finalizado').first().id,
+                es_entrada=False,
+                fecha_finalizacion=datetime.now(),
+                usuario_creacion_id=current_user.id
+            )
+            
+            db.session.add(documento)
+            db.session.commit()
+            
+            # Registrar en el historial
+            historial = HistorialMovimiento(
+                documento_id=documento.id,
+                fecha_movimiento=documento.fecha_recepcion,
+                area_origen_id=documento.area_actual_id,
+                persona_origen_id=documento.persona_actual_id,
+                area_destino_id=documento.area_actual_id,
+                persona_destino_id=documento.persona_actual_id,
+                estado_id=documento.estado_id,
+                observaciones=documento.observaciones,
+                usuario_id=current_user.id
+            )
+            
+            db.session.add(historial)
+            db.session.commit()
+            
+            flash(f'Documento saliente registrado correctamente con radicado {radicado}', 'success')
+            return redirect(url_for('documentos.registrar_salida'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Error al registrar documento saliente: {str(e)}')
+            flash(f'Error al registrar el documento: {str(e)}', 'danger')
+    
+    # Obtener documentos salientes recientes
+    documentos = Documento.query.filter_by(
+        es_entrada=False,
+        usuario_creacion_id=current_user.id
+    ).order_by(Documento.creado_en.desc()).limit(10).all()
     
     return render_template('documentos/registrar_salida.html',
                           title='Registrar Documento Saliente',
-                          form=form)
+                          form=form,
+                          documentos=documentos)
 
 @documentos_bp.route('/registrar-salida-completo', methods=['GET', 'POST'])
 @login_required
@@ -447,9 +447,66 @@ def transferir_documento():
     form = TransferenciaDocumentoForm()
     
     if form.validate_on_submit():
-        # Código para procesar el formulario
-        # ...
-        flash('Documento transferido correctamente', 'success')
+        documento_id = form.documento_id.data
+        documento = Documento.query.get_or_404(documento_id)
+        
+        # Verificar permisos
+        if not current_user.is_superadmin() and documento.area_actual_id != current_user.persona.area_id:
+            flash('No tienes permisos para transferir este documento', 'danger')
+            return redirect(url_for('documentos.detalle_documento', id=documento_id))
+        
+        try:
+            # Guardar datos actuales para el historial
+            area_origen_id = documento.area_actual_id
+            persona_origen_id = documento.persona_actual_id
+            
+            # Actualizar documento
+            documento.area_actual_id = form.area_destino_id.data
+            documento.persona_actual_id = form.persona_destino_id.data if form.persona_destino_id.data > 0 else None
+            documento.estado_id = form.estado_id.data
+            documento.usuario_actualizacion_id = current_user.id
+            documento.actualizado_en = datetime.now()
+            
+            # Si el estado es "Finalizado", guardar fecha de finalización
+            if EstadoDocumento.query.get(form.estado_id.data).nombre == 'Finalizado':
+                documento.fecha_finalizacion = datetime.now()
+            
+            db.session.commit()
+            
+            # Registrar en el historial
+            historial = HistorialMovimiento(
+                documento_id=documento_id,
+                fecha_movimiento=datetime.now(),
+                area_origen_id=area_origen_id,
+                persona_origen_id=persona_origen_id,
+                area_destino_id=documento.area_actual_id,
+                persona_destino_id=documento.persona_actual_id,
+                estado_id=documento.estado_id,
+                observaciones=form.observaciones.data,
+                usuario_id=current_user.id
+            )
+            
+            db.session.add(historial)
+            db.session.commit()
+            
+            # Crear notificación si hay persona destino
+            if documento.persona_actual_id:
+                from app.models.notificacion import Notificacion
+                from app.models.usuario import Usuario
+                usuario_destino = Usuario.query.filter_by(persona_id=documento.persona_actual_id).first()
+                if usuario_destino:
+                    Notificacion.crear_notificacion_documento(
+                        usuario_id=usuario_destino.id,
+                        documento_id=documento.id,
+                        accion="recibido" if EstadoDocumento.query.get(form.estado_id.data).nombre == 'Recibido' else "transferido"
+                    )
+            
+            flash('Documento transferido correctamente', 'success')
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Error al transferir documento: {str(e)}')
+            flash(f'Error al transferir el documento: {str(e)}', 'danger')
     else:
         for field, errors in form.errors.items():
             for error in errors:
@@ -463,9 +520,55 @@ def aceptar_documento(id):
     """
     Aceptar un documento asignado
     """
-    # Código para aceptar el documento
-    # ...
-    flash('Documento aceptado correctamente', 'success')
+    documento = Documento.query.get_or_404(id)
+    
+    # Verificar permisos
+    if documento.persona_actual_id != current_user.persona_id:
+        flash('No tienes permisos para aceptar este documento', 'danger')
+        return redirect(url_for('documentos.detalle_documento', id=id))
+    
+    try:
+        # Cambiar estado a "En proceso"
+        estado_en_proceso = EstadoDocumento.query.filter_by(nombre='En proceso').first()
+        
+        if not estado_en_proceso:
+            flash('No se encontró el estado "En proceso"', 'danger')
+            return redirect(url_for('documentos.detalle_documento', id=id))
+        
+        # Guardar datos actuales para el historial
+        area_origen_id = documento.area_actual_id
+        persona_origen_id = documento.persona_actual_id
+        
+        # Actualizar estado
+        documento.estado_id = estado_en_proceso.id
+        documento.usuario_actualizacion_id = current_user.id
+        documento.actualizado_en = datetime.now()
+        
+        db.session.commit()
+        
+        # Registrar en el historial
+        historial = HistorialMovimiento(
+            documento_id=id,
+            fecha_movimiento=datetime.now(),
+            area_origen_id=area_origen_id,
+            persona_origen_id=persona_origen_id,
+            area_destino_id=documento.area_actual_id,  # No cambia
+            persona_destino_id=documento.persona_actual_id,  # No cambia
+            estado_id=documento.estado_id,
+            observaciones='Documento aceptado por el destinatario',
+            usuario_id=current_user.id
+        )
+        
+        db.session.add(historial)
+        db.session.commit()
+        
+        flash('Documento aceptado correctamente', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Error al aceptar documento: {str(e)}')
+        flash(f'Error al aceptar el documento: {str(e)}', 'danger')
+    
     return redirect(url_for('documentos.detalle_documento', id=id))
 
 @documentos_bp.route('/rechazar/<int:id>', methods=['POST'])
@@ -474,13 +577,75 @@ def rechazar_documento(id):
     """
     Rechazar un documento asignado
     """
+    documento = Documento.query.get_or_404(id)
     motivo = request.form.get('motivo', '')
+    
+    # Verificar permisos
+    if documento.persona_actual_id != current_user.persona_id:
+        flash('No tienes permisos para rechazar este documento', 'danger')
+        return redirect(url_for('documentos.detalle_documento', id=id))
     
     if not motivo:
         flash('Debe proporcionar un motivo para rechazar el documento', 'danger')
         return redirect(url_for('documentos.detalle_documento', id=id))
     
-    # Código para rechazar el documento
-    # ...
-    flash('Documento rechazado correctamente', 'success')
+    try:
+        # Guardar datos actuales para el historial
+        area_origen_id = documento.area_actual_id
+        persona_origen_id = documento.persona_actual_id
+        
+        # Volver el documento al área de recepción o al remitente
+        area_recepcion = Area.query.filter_by(nombre='RECEPCIÓN').first()
+        
+        if not area_recepcion:
+            flash('No se encontró el área de recepción', 'danger')
+            return redirect(url_for('documentos.detalle_documento', id=id))
+        
+        # Actualizar documento
+        documento.area_actual_id = area_recepcion.id
+        documento.persona_actual_id = None  # Quitar asignación personal
+        documento.usuario_actualizacion_id = current_user.id
+        documento.actualizado_en = datetime.now()
+        
+        db.session.commit()
+        
+        # Registrar en el historial
+        historial = HistorialMovimiento(
+            documento_id=id,
+            fecha_movimiento=datetime.now(),
+            area_origen_id=area_origen_id,
+            persona_origen_id=persona_origen_id,
+            area_destino_id=documento.area_actual_id,
+            persona_destino_id=documento.persona_actual_id,
+            estado_id=documento.estado_id,
+            observaciones=f'Documento rechazado. Motivo: {motivo}',
+            usuario_id=current_user.id
+        )
+        
+        db.session.add(historial)
+        db.session.commit()
+        
+        # Notificar al área de recepción
+        from app.models.notificacion import Notificacion
+        from app.models.usuario import Usuario
+        
+        usuarios_recepcion = Usuario.query.join(Persona).filter(
+            Persona.area_id == area_recepcion.id,
+            Usuario.activo == True
+        ).all()
+        
+        for usuario in usuarios_recepcion:
+            Notificacion.crear_notificacion_documento(
+                usuario_id=usuario.id,
+                documento_id=documento.id,
+                accion="rechazado"
+            )
+        
+        flash('Documento rechazado correctamente', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Error al rechazar documento: {str(e)}')
+        flash(f'Error al rechazar el documento: {str(e)}', 'danger')
+    
     return redirect(url_for('documentos.lista_documentos'))
