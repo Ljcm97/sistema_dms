@@ -235,6 +235,10 @@ def crear_persona():
             activo=form.activo.data
         )
         
+        # Asignar cargo_id solo si no es 0
+        if form.cargo_id.data and form.cargo_id.data != 0:
+            persona.cargo_id = form.cargo_id.data
+        
         db.session.add(persona)
         db.session.commit()
         
@@ -260,6 +264,8 @@ def editar_persona(id):
         form.telefono.data = persona.telefono
         form.area_id.data = persona.area_id
         form.activo.data = persona.activo
+        if persona.cargo_id:
+            form.cargo_id.data = persona.cargo_id
     
     if form.validate_on_submit():
         # Verificar si ya existe otra persona con el mismo email
@@ -277,6 +283,12 @@ def editar_persona(id):
         persona.telefono = form.telefono.data
         persona.area_id = form.area_id.data
         persona.activo = form.activo.data
+        
+        # Asignar cargo_id solo si no es 0, de lo contrario establecer en None
+        if form.cargo_id.data and form.cargo_id.data != 0:
+            persona.cargo_id = form.cargo_id.data
+        else:
+            persona.cargo_id = None
         
         db.session.commit()
         

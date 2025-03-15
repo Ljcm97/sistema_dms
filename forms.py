@@ -77,6 +77,7 @@ class PersonaForm(FlaskForm):
     email = StringField('Email', validators=[Email(), Length(1, 100), Optional()])
     telefono = StringField('Teléfono', validators=[Length(1, 20), Optional()])
     area_id = SelectField('Área', coerce=int, validators=[DataRequired()])
+    cargo_id = SelectField('Cargo', coerce=int, validators=[Optional()])
     activo = BooleanField('Activo', default=True)
     submit = SubmitField('Guardar')
     
@@ -84,6 +85,8 @@ class PersonaForm(FlaskForm):
         super(PersonaForm, self).__init__(*args, **kwargs)
         self.area_id.choices = [(a.id, a.nombre) 
                                for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()]
+        self.cargo_id.choices = [(0, '-- Seleccione --')] + [(c.id, c.nombre) 
+                                for c in Cargo.query.filter_by(activo=True).order_by(Cargo.nombre).all()]
 
 class DocumentoEntradaForm(FlaskForm):
     """
