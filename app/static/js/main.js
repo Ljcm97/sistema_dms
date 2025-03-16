@@ -48,28 +48,54 @@ function cargarPersonasPorArea(selectArea, selectPersona) {
             $personaSelect.append('<option value="0">-- Error al cargar personas --</option>');
             $personaSelect.prop('disabled', false);
             
-            // Mostrar mensaje de error visual
+            // Manejo de errores específicos
             if (xhr.status === 500) {
                 alert('Error del servidor al cargar el listado de personas. Por favor, inténtelo de nuevo más tarde.');
             } else if (xhr.status === 404) {
                 // Intentamos cargar directamente personas del área
                 hacerCargaManual(areaId, $personaSelect);
             } else {
-                alert(`Error al cargar el listado de personas: ${error}`);
+                // Intentar rutas alternativas
+                fallbackLoadPersonas(areaId, $personaSelect);
             }
         }
     });
 }
 
-// Función de respaldo para cargar personas cuando falla la API
+// Función de respaldo para cargar personas cuando falla la API principal
+function fallbackLoadPersonas(areaId, $personaSelect) {
+    // Intenta usar la ruta alternativa para obtener personas
+    $.ajax({
+        url: `/personas_api/personas-por-area/${areaId}`,
+        method: 'GET',
+        dataType: 'json',
+        timeout: 8000,
+        success: function(data) {
+            $personaSelect.empty();
+            $personaSelect.append('<option value="0">-- Seleccione --</option>');
+            
+            if (data && data.length > 0) {
+                $.each(data, function(index, persona) {
+                    $personaSelect.append(`<option value="${persona.id}">${persona.nombre_completo || persona.nombre}</option>`);
+                });
+            }
+            $personaSelect.prop('disabled', false);
+        },
+        error: function() {
+            // Si también falla, intenta con la ruta original de admin
+            hacerCargaManual(areaId, $personaSelect);
+        }
+    });
+}
+
+// Función de respaldo para cargar personas utilizando fetch y la ruta de admin
 function hacerCargaManual(areaId, $personaSelect) {
     console.log("Intentando carga manual para el área: " + areaId);
     
-    // Si estamos en un entorno de desarrollo, podemos proporcionar algunos datos de ejemplo
     $personaSelect.empty();
     $personaSelect.append('<option value="0">-- Seleccione --</option>');
     
-    // Intentamos una solución alternativa reutilizando el código
+    // Intentamos una solución alternativa usando fetch
     fetch(`/admin/api/personas-por-area/${areaId}`)
     .then(response => {
         if (response.ok) {

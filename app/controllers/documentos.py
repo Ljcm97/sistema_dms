@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from app.models.historial import HistorialMovimiento
 from app.models.area import Area
 from app.models.persona import Persona
+from app.models.usuario import Usuario
 
 # Crear blueprint
 tipos_bp = Blueprint('tipos', __name__, url_prefix='/tipos')
@@ -153,11 +154,9 @@ def lista_documentos():
     page = request.args.get('page', 1, type=int)
     
     # Crear formulario de búsqueda
-    from app.forms import BusquedaForm
     form = BusquedaForm()
     
     # Consulta base
-    from app.models.documento import Documento
     query = Documento.query
     
     # Aplicar filtros de búsqueda si se proporcionaron
@@ -226,7 +225,6 @@ def detalle_documento(id):
     Detalle de un documento
     """
     # Obtener el documento
-    from app.models.documento import Documento
     documento = Documento.query.get_or_404(id)
     
     # Verificar permisos
@@ -236,11 +234,9 @@ def detalle_documento(id):
             return redirect(url_for('documentos.dashboard'))
     
     # Obtener el historial de movimientos
-    from app.models.historial import HistorialMovimiento
     historial = HistorialMovimiento.query.filter_by(documento_id=id).order_by(HistorialMovimiento.fecha_movimiento.desc()).all()
     
     # Formulario de transferencia
-    from app.forms import TransferenciaDocumentoForm
     form_transferencia = TransferenciaDocumentoForm()
     form_transferencia.documento_id.data = id
     
@@ -252,7 +248,6 @@ def detalle_documento(id):
     
     # Verificar si el usuario es el destinatario y si el documento está pendiente de aceptación
     es_destinatario = current_user.persona_id == documento.persona_actual_id
-    from app.models.documento import EstadoDocumento
     estado_recibido = EstadoDocumento.query.filter_by(nombre='Recibido').first()
     pendiente_aceptacion = documento.estado_id == estado_recibido.id if estado_recibido else False
     
@@ -278,11 +273,26 @@ def registrar_entrada():
     
     form = DocumentoEntradaForm()
     
+    # Establecer fecha y hora actual si el formulario es nuevo
+    if request.method == 'GET':
+        form.fecha_recepcion.data = datetime.now()
+    
+    # Pre-procesar el formulario antes de validate_on_submit
+    if request.method == 'POST':
+        # Asegurarnos que persona_destino_id sea 0 si no se seleccionó nada
+        if not form.persona_destino_id.data or form.persona_destino_id.data == '':
+            form.persona_destino_id.data = 0
+    
     if form.validate_on_submit():
         try:
             # Generar radicado único
             radicado = Documento.generar_radicado()
             
+            # Validar si la persona_destino_id es 0, en ese caso asignar None
+            persona_destino_id = None
+            if form.persona_destino_id.data and int(form.persona_destino_id.data) > 0:
+                persona_destino_id = int(form.persona_destino_id.data)
+                
             # Crear el documento
             documento = Documento(
                 radicado=radicado,
@@ -294,14 +304,14 @@ def registrar_entrada():
                 contenido=form.contenido.data,
                 observaciones=form.observaciones.data,
                 area_actual_id=form.area_destino_id.data,
-                persona_actual_id=form.persona_destino_id.data if form.persona_destino_id.data > 0 else None,
+                persona_actual_id=persona_destino_id,
                 estado_id=EstadoDocumento.query.filter_by(nombre='Recibido').first().id,
                 es_entrada=True,
                 usuario_creacion_id=current_user.id
             )
             
             db.session.add(documento)
-            db.session.commit()
+            db.session.flush()  # Para obtener el ID sin hacer commit aún
             
             # Registrar en el historial
             historial = HistorialMovimiento(
@@ -310,7 +320,7 @@ def registrar_entrada():
                 area_origen_id=current_user.persona.area_id,
                 persona_origen_id=current_user.persona_id,
                 area_destino_id=documento.area_actual_id,
-                persona_destino_id=documento.persona_actual_id,
+                persona_destino_id=persona_destino_id,
                 estado_id=documento.estado_id,
                 observaciones=documento.observaciones,
                 usuario_id=current_user.id
@@ -322,11 +332,14 @@ def registrar_entrada():
             # Crear notificación si hay persona destino
             if documento.persona_actual_id:
                 from app.models.notificacion import Notificacion
-                Notificacion.crear_notificacion_documento(
-                    usuario_id=Usuario.query.filter_by(persona_id=documento.persona_actual_id).first().id if Usuario.query.filter_by(persona_id=documento.persona_actual_id).first() else None,
-                    documento_id=documento.id,
-                    accion="recibido"
-                )
+                from app.models.usuario import Usuario
+                usuario_destino = Usuario.query.filter_by(persona_id=documento.persona_actual_id).first()
+                if usuario_destino:
+                    Notificacion.crear_notificacion_documento(
+                        usuario_id=usuario_destino.id,
+                        documento_id=documento.id,
+                        accion="recibido"
+                    )
             
             flash(f'Documento entrante registrado correctamente con radicado {radicado}', 'success')
             return redirect(url_for('documentos.registrar_entrada'))
@@ -335,6 +348,10 @@ def registrar_entrada():
             db.session.rollback()
             current_app.logger.error(f'Error al registrar documento entrante: {str(e)}')
             flash(f'Error al registrar el documento: {str(e)}', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'Error en el campo {field}: {error}', 'danger')
     
     # Obtener documentos entrantes recientes
     documentos = Documento.query.filter_by(
@@ -392,7 +409,7 @@ def registrar_salida():
             )
             
             db.session.add(documento)
-            db.session.commit()
+            db.session.flush() # Para obtener el ID sin hacer commit aún
             
             # Registrar en el historial
             historial = HistorialMovimiento(
@@ -417,6 +434,10 @@ def registrar_salida():
             db.session.rollback()
             current_app.logger.error(f'Error al registrar documento saliente: {str(e)}')
             flash(f'Error al registrar el documento: {str(e)}', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'Error en el campo {field}: {error}', 'danger')
     
     # Obtener documentos salientes recientes
     documentos = Documento.query.filter_by(
@@ -443,7 +464,6 @@ def transferir_documento():
     """
     Transferir un documento a otra área/persona
     """
-    from app.forms import TransferenciaDocumentoForm
     form = TransferenciaDocumentoForm()
     
     if form.validate_on_submit():
@@ -492,7 +512,6 @@ def transferir_documento():
             # Crear notificación si hay persona destino
             if documento.persona_actual_id:
                 from app.models.notificacion import Notificacion
-                from app.models.usuario import Usuario
                 usuario_destino = Usuario.query.filter_by(persona_id=documento.persona_actual_id).first()
                 if usuario_destino:
                     Notificacion.crear_notificacion_documento(
@@ -627,7 +646,6 @@ def rechazar_documento(id):
         
         # Notificar al área de recepción
         from app.models.notificacion import Notificacion
-        from app.models.usuario import Usuario
         
         usuarios_recepcion = Usuario.query.join(Persona).filter(
             Persona.area_id == area_recepcion.id,

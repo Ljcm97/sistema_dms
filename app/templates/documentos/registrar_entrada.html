@@ -125,7 +125,9 @@
                     
                     <div class="col-md-6">
                         {{ form.persona_destino_id.label(class="form-label") }}
-                        {{ form.persona_destino_id(class="form-select", id="persona_destino_id") }}
+                        <select name="persona_destino_id" id="persona_destino_id" class="form-select">
+                            <option value="0">-- Seleccione --</option>
+                        </select>
                         {% if form.persona_destino_id.errors %}
                             <div class="text-danger">
                                 {% for error in form.persona_destino_id.errors %}
@@ -202,6 +204,43 @@
 
 {% block scripts %}
 <script>
+    // Función para cargar personas por área
+    function cargarPersonasPorArea(areaSelector, personaSelector) {
+        const areaId = $(areaSelector).val();
+        const personaSelect = $(personaSelector);
+        
+        // Limpiar opciones actuales
+        personaSelect.empty().append('<option value="">-- Seleccione una persona --</option>');
+        
+        if (areaId) {
+            // Realizar petición AJAX para obtener las personas del área
+            $.ajax({
+                url: '/api/personas-por-area/' + areaId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.personas && data.personas.length > 0) {
+                        // Agregar opciones al select
+                        $.each(data.personas, function(index, persona) {
+                            personaSelect.append(
+                                $('<option></option>').val(persona.id).text(persona.nombre)
+                            );
+                        });
+                    } else {
+                        personaSelect.append(
+                            $('<option></option>').val('').text('No hay personas disponibles')
+                        );
+                    }
+                },
+                error: function() {
+                    personaSelect.append(
+                        $('<option></option>').val('').text('Error al cargar personas')
+                    );
+                }
+            });
+        }
+    }
+
     $(document).ready(function() {
         // Inicializar con la fecha y hora actual si el campo está vacío
         if (!$('#fecha_recepcion').val()) {
@@ -212,6 +251,7 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             
+            // Formato correcto para input datetime-local: YYYY-MM-DDThh:mm
             const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
             $('#fecha_recepcion').val(formattedDate);
         }

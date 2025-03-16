@@ -93,7 +93,7 @@ class DocumentoEntradaForm(FlaskForm):
     """
     Formulario para registrar documentos entrantes
     """
-    fecha_recepcion = DateTimeField('Fecha y Hora de Recepción', format='%Y-%m-%d %H:%M', 
+    fecha_recepcion = DateTimeField('Fecha y Hora de Recepción', format='%Y-%m-%dT%H:%M', 
                                    validators=[DataRequired()])
     transportadora_id = SelectField('Transportadora', coerce=int, validators=[Optional()])
     numero_guia = StringField('Número de Guía', validators=[Length(1, 50), Optional()])
@@ -102,7 +102,7 @@ class DocumentoEntradaForm(FlaskForm):
     contenido = TextAreaField('Contenido')
     observaciones = TextAreaField('Observaciones')
     area_destino_id = SelectField('Área Destino', coerce=int, validators=[DataRequired()])
-    persona_destino_id = SelectField('Persona Destino', coerce=int)  # Sin validadores
+    persona_destino_id = SelectField('Persona Destino', coerce=int, default=0)
     submit = SubmitField('Registrar Documento')
     
     def __init__(self, *args, **kwargs):
@@ -119,19 +119,20 @@ class DocumentoEntradaForm(FlaskForm):
         self.persona_destino_id.choices = [(0, '-- Seleccione --')]
         
     def validate_persona_destino_id(self, field):
-        # Si el valor es 0 o no está en las opciones, simplemente no lo validamos
-        return True
+        # Permitir explícitamente el valor 0 para persona_destino_id
+        if field.data == 0:
+            return True
 
 class DocumentoSalidaForm(FlaskForm):
     """
     Formulario para registrar documentos salientes
     """
-    fecha_envio = DateTimeField('Fecha y Hora de Envío', format='%Y-%m-%d %H:%M', 
+    fecha_envio = DateTimeField('Fecha y Hora de Envío', format='%Y-%m-%dT%H:%M', 
                                validators=[DataRequired()])
     transportadora_id = SelectField('Transportadora', coerce=int, validators=[DataRequired()])
     numero_guia = StringField('Número de Guía', validators=[Length(1, 50), Optional()])
     area_origen_id = SelectField('Área Origen', coerce=int, validators=[DataRequired()])
-    persona_origen_id = SelectField('Persona Origen', coerce=int)  # Sin validadores
+    persona_origen_id = SelectField('Persona Origen', coerce=int, validate_choice=False)
     destinatario = StringField('Destinatario', validators=[DataRequired(), Length(1, 255)])
     tipo_documento_id = SelectField('Tipo de Documento', coerce=int, validators=[DataRequired()])
     contenido = TextAreaField('Contenido')
@@ -150,10 +151,6 @@ class DocumentoSalidaForm(FlaskForm):
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
         self.persona_origen_id.choices = [(0, '-- Seleccione --')]
-        
-    def validate_persona_origen_id(self, field):
-        # Si el valor es 0 o no está en las opciones, simplemente no lo validamos
-        return True
 
 class TransferenciaDocumentoForm(FlaskForm):
     """
@@ -161,7 +158,7 @@ class TransferenciaDocumentoForm(FlaskForm):
     """
     documento_id = HiddenField('ID Documento', validators=[DataRequired()])
     area_destino_id = SelectField('Área Destino', coerce=int, validators=[DataRequired()])
-    persona_destino_id = SelectField('Persona Destino', coerce=int, validators=[Optional()])
+    persona_destino_id = SelectField('Persona Destino', coerce=int, validate_choice=False)
     estado_id = SelectField('Estado', coerce=int, validators=[DataRequired()])
     observaciones = TextAreaField('Observaciones')
     submit = SubmitField('Transferir Documento')
