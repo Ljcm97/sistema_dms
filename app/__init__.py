@@ -6,7 +6,8 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
 from flask_moment import Moment
-from datetime import datetime  # Importa datetime para obtener la fecha actual
+from datetime import datetime
+from flask_cors import CORS
 
 # Inicialización de extensiones
 db = SQLAlchemy()
@@ -34,6 +35,9 @@ def create_app(config_name=None):
     mail.init_app(app)
     moment.init_app(app)
     
+    # Habilitar CORS para las rutas de la API
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
     # Configuración de login
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Por favor inicie sesión para acceder a esta página.'
@@ -52,6 +56,9 @@ def create_app(config_name=None):
     from app.controllers.zonas_economicas import zonas_bp
     from app.controllers.notificaciones import notificaciones_bp
     
+    # Registrar el blueprint para personas_api
+    from app.controllers.personas_api import personas_api_bp
+    
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(documentos_bp)
@@ -63,6 +70,7 @@ def create_app(config_name=None):
     app.register_blueprint(cargos_bp)
     app.register_blueprint(zonas_bp)
     app.register_blueprint(notificaciones_bp)
+    app.register_blueprint(personas_api_bp)
     
     # Handlers para errores
     register_error_handlers(app)
@@ -96,6 +104,13 @@ def create_app(config_name=None):
     def inject_now():
         return {'now': datetime.utcnow()}
     
+    # Añadir funciones útiles al contexto de las plantillas
+    @app.context_processor
+    def utility_processor():
+        return {
+            'hasattr': hasattr
+        }
+
     return app
 
 def register_error_handlers(app):

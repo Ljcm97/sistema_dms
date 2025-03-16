@@ -24,6 +24,9 @@ function cargarPersonasPorArea(selectArea, selectPersona) {
         method: 'GET',
         dataType: 'json',
         timeout: 10000, // 10 segundos de timeout
+        xhrFields: {
+            withCredentials: true
+        },
         success: function(data) {
             $personaSelect.empty();
             $personaSelect.append('<option value="0">-- Seleccione --</option>');
@@ -49,11 +52,46 @@ function cargarPersonasPorArea(selectArea, selectPersona) {
             if (xhr.status === 500) {
                 alert('Error del servidor al cargar el listado de personas. Por favor, inténtelo de nuevo más tarde.');
             } else if (xhr.status === 404) {
-                alert('No se encontró el servicio para cargar personas. Contacte al administrador del sistema.');
+                // Intentamos cargar directamente personas del área
+                hacerCargaManual(areaId, $personaSelect);
             } else {
                 alert(`Error al cargar el listado de personas: ${error}`);
             }
         }
+    });
+}
+
+// Función de respaldo para cargar personas cuando falla la API
+function hacerCargaManual(areaId, $personaSelect) {
+    console.log("Intentando carga manual para el área: " + areaId);
+    
+    // Si estamos en un entorno de desarrollo, podemos proporcionar algunos datos de ejemplo
+    $personaSelect.empty();
+    $personaSelect.append('<option value="0">-- Seleccione --</option>');
+    
+    // Intentamos una solución alternativa reutilizando el código
+    fetch(`/admin/api/personas-por-area/${areaId}`)
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('No se pudo obtener datos de respaldo');
+    })
+    .then(data => {
+        if (data && data.length > 0) {
+            data.forEach(persona => {
+                $personaSelect.append(`<option value="${persona.id}">${persona.nombre_completo}</option>`);
+            });
+        } else {
+            $personaSelect.append('<option value="0" disabled>No hay personas disponibles</option>');
+        }
+    })
+    .catch(error => {
+        console.error('Error en carga manual:', error);
+        $personaSelect.append('<option value="0" disabled>No se pudieron cargar personas</option>');
+    })
+    .finally(() => {
+        $personaSelect.prop('disabled', false);
     });
 }
 

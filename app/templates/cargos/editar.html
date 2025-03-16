@@ -71,7 +71,7 @@
                     </tr>
                     <tr>
                         <th>Personas Asignadas</th>
-                        <td>{{ cargo.personas.count() }}</td>
+                        <td>{% if cargo.personas is defined and cargo.personas %}{{ cargo.personas.count() }}{% else %}0{% endif %}</td>
                     </tr>
                 </table>
             </div>

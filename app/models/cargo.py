@@ -14,7 +14,7 @@ class Cargo(db.Model):
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relaciones
-    # personas = db.relationship('Persona', backref='cargo', lazy='dynamic')
+    personas = db.relationship('Persona', backref='cargo_rel', lazy='dynamic')
     
     def __repr__(self):
         return f'<Cargo {self.nombre}>'
@@ -25,3 +25,11 @@ class Cargo(db.Model):
         Obtener todos los cargos activos
         """
         return cls.query.filter_by(activo=True).order_by(cls.nombre).all()
+    
+@property
+def personas(self):
+    """
+    Devuelve las personas asociadas a este cargo
+    """
+    from app.models.persona import Persona
+    return Persona.query.filter_by(cargo_id=self.id)
