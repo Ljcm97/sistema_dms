@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, redirect, url_for, request
+from flask import Blueprint, jsonify, redirect, url_for, request, render_template
 from flask_login import login_required, current_user
 from app import db
 from app.models.notificacion import Notificacion
@@ -55,3 +55,26 @@ def count():
     ).count()
     
     return jsonify({'count': count})
+
+@notificaciones_bp.route('/todas')
+@login_required
+def todas():
+    """
+    Ver todas las notificaciones en una página
+    """
+    page = request.args.get('page', 1, type=int)
+    
+    # Obtener todas las notificaciones del usuario
+    query = Notificacion.query.filter_by(usuario_id=current_user.id).order_by(Notificacion.creado_en.desc())
+    
+    # Paginación
+    pagination = query.paginate(
+        page=page, 
+        per_page=20,
+        error_out=False
+    )
+    
+    return render_template('notificaciones/todas.html',
+                          title='Mis Notificaciones',
+                          notificaciones=pagination.items,
+                          pagination=pagination)

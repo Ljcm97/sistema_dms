@@ -17,6 +17,9 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
+    <!-- Notifications CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+    
     {% block styles %}{% endblock %}
 </head>
 <body>
@@ -125,15 +128,35 @@
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item dropdown" id="notificacionesDropdown">
-                        <a class="nav-link position-relative" href="#" id="notificacionesLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificacionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificacionesCount" style="font-size: 0.6rem; display: none;">0</span>
+                            <span class="position-absolute translate-middle badge rounded-pill bg-danger" id="notificacionesCount" style="font-size: 0.6rem; display: none;">0</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificacionesLink" id="notificacionesList" style="width: 300px; max-height: 400px; overflow-y: auto;">
-                            <li class="dropdown-header">Notificaciones</li>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificacionesDropdown">
+                            <li class="dropdown-header d-flex justify-content-between align-items-center">
+                                <span>Notificaciones</span>
+                                <span class="badge bg-primary rounded-pill" id="notificacionesTotalCount">0</span>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li class="dropdown-item text-center" id="noNotificaciones">No tienes notificaciones nuevas</li>
+                            <li class="text-center py-2" id="notificacionesLoading">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <span class="ms-1">Cargando notificaciones...</span>
+                            </li>
+                            <li class="text-center py-3" id="noNotificaciones" style="display: none;">
+                                <span class="text-muted"><i class="fas fa-bell-slash me-2"></i>No tienes notificaciones nuevas</span>
+                            </li>
+                            <div id="notificacionesList">
+                                <!-- Aquí se cargarán dinámicamente las notificaciones -->
+                            </div>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-footer">
+                                <a href="{{ url_for('notificaciones.todas') }}" class="btn btn-sm btn-primary w-100">
+                                    <i class="fas fa-list me-1"></i> Ver todas las notificaciones
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">

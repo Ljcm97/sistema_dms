@@ -154,14 +154,15 @@ function cargarNotificaciones() {
             
             // Agregar notificaciones
             data.forEach(function(notificacion) {
-                const $item = $('<li>').addClass('dropdown-item notification-item');
+                const $item = $('<li>').addClass('dropdown-item notification-item unread');
                 const $link = $('<a>').attr('href', notificacion.url)
-                    .addClass('text-dark text-decoration-none notification-link')
+                    .addClass('notification-link')
                     .data('id', notificacion.id);
                 
-                const $content = $('<div>').addClass('d-flex flex-column');
-                $content.append($('<small>').addClass('text-muted').text(notificacion.fecha));
-                $content.append($('<span>').text(notificacion.mensaje));
+                const $content = $('<div>').addClass('notification-content');
+                // Usamos div con clase específica para el mensaje
+                $content.append($('<div>').addClass('notification-message').text(notificacion.mensaje));
+                $content.append($('<div>').addClass('notification-time').text(notificacion.fecha));
                 
                 $link.append($content);
                 $item.append($link);

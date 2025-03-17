@@ -1,0 +1,97 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap);
+
+.notification-ui {
+    position: relative;
+}
+
+.notification-ui .dropdown-toggle::after {
+    display: none;
+}
+
+.notification-ui_icon {
+    position: relative;
+}
+
+.notification-ui_icon .unread-notification {
+    display: inline-block;
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    background-color: #f62d51;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.notification-dropdown {
+    width: 350px;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+}
+
+.notification-dropdown .dropdown-header {
+    padding: 12px 15px;
+    background-color: #1D2C96;
+    color: white;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.notification-dropdown .dropdown-divider {
+    margin: 0;
+}
+
+.notification-dropdown .dropdown-footer {
+    padding: 10px 15px;
+    text-align: center;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: rgba(29, 44, 150, 0.05);
+    border-left: 3px solid #DAA520;
+}
+
+.notification-item .notification-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.notification-item .notification-content {
+    width: 100%;
+}
+
+.notification-item .notification-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 3px;
+}
+
+.notification-item .notification-message {
+    margin-bottom: 3px;
+    color: #343a40;
+    /* Importante: estas propiedades permitirán que el texto se ajuste */
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+/* Para móviles y pantallas pequeñas */
+@media (max-width: 767.98px) {
+    .notification-dropdown {
+        width: 300px;
+    }
+}
