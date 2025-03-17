@@ -113,7 +113,12 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         {{ form.area_destino_id.label(class="form-label") }}
-                        {{ form.area_destino_id(class="form-select", id="area_destino_id") }}
+                        <select class="form-select" id="area_destino_id" name="area_destino_id" required>
+                            <option value="">-- Seleccione Área --</option>
+                            {% for area in areas %}
+                                <option value="{{ area.id }}">{{ area.nombre }}</option>
+                            {% endfor %}
+                        </select>
                         {% if form.area_destino_id.errors %}
                             <div class="text-danger">
                                 {% for error in form.area_destino_id.errors %}
@@ -125,7 +130,9 @@
                     
                     <div class="col-md-6">
                         {{ form.persona_destino_id.label(class="form-label") }}
-                        {{ form.persona_destino_id(class="form-select", id="persona_destino_id") }}
+                        <select class="form-select" id="persona_destino_id" name="persona_destino_id">
+                            <option value="">-- Seleccione primero un área --</option>
+                        </select>
                         {% if form.persona_destino_id.errors %}
                             <div class="text-danger">
                                 {% for error in form.persona_destino_id.errors %}

@@ -46,11 +46,11 @@
         </div>
     </div>
 
-    <!-- Documentos Recientes -->
+    <!-- Documentos Recientes (Versión expandida) -->
     <div class="row">
-        <div class="col-xl-6 col-lg-6">
+        <div class="col-xl-12 col-lg-12">
             <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">Documentos Recientes</h6>
                     <a href="{{ url_for('documentos.lista_documentos') }}" class="btn btn-sm btn-primary">
                         Ver Todos <i class="fas fa-arrow-right"></i>
@@ -64,8 +64,10 @@
                                 <tr>
                                     <th>Radicado</th>
                                     <th>Fecha</th>
+                                    <th>Remitente</th>
                                     <th>Tipo</th>
                                     <th>Estado</th>
+                                    <th>Área Actual</th>
                                     <th>Acción</th>
                                 </tr>
                             </thead>
@@ -74,12 +76,14 @@
                                 <tr>
                                     <td>{{ doc.radicado }}</td>
                                     <td>{{ doc.fecha_recepcion.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ doc.remitente }}</td>
                                     <td>{{ doc.tipo_documento.nombre }}</td>
                                     <td>
                                         <span class="badge" style="background-color: {{ doc.estado.color }}">
                                             {{ doc.estado.nombre }}
                                         </span>
                                     </td>
+                                    <td>{{ doc.area_actual.nombre }}</td>
                                     <td>
                                         <a href="{{ url_for('documentos.detalle_documento', id=doc.id) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i>
@@ -92,53 +96,6 @@
                     </div>
                     {% else %}
                     <p class="text-center">No hay documentos recientes.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Movimientos Recientes -->
-        <div class="col-xl-6 col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Movimientos Recientes</h6>
-                </div>
-                <div class="card-body">
-                    {% if movimientos_recientes %}
-                    <ul class="timeline">
-                        {% for mov in movimientos_recientes %}
-                        <li class="timeline-item">
-                            <div class="timeline-badge" style="background-color: {{ mov.estado.color }}"></div>
-                            <div class="timeline-panel">
-                                <div class="timeline-heading">
-                                    <h6 class="timeline-title">
-                                        Documento {{ mov.documento.radicado }}
-                                    </h6>
-                                    <small class="text-muted">
-                                        <i class="fas fa-clock"></i> {{ mov.fecha_movimiento.strftime('%d/%m/%Y %H:%M') }}
-                                    </small>
-                                </div>
-                                <div class="timeline-body">
-                                    <p>De: <strong>{{ mov.area_origen.nombre }}</strong> → 
-                                       A: <strong>{{ mov.area_destino.nombre }}</strong></p>
-                                    <p>Estado: <span class="badge" style="background-color: {{ mov.estado.color }}">
-                                        {{ mov.estado.nombre }}
-                                    </span></p>
-                                    {% if mov.observaciones %}
-                                    <p class="mt-1">{{ mov.observaciones }}</p>
-                                    {% endif %}
-                                </div>
-                                <div class="timeline-footer">
-                                    <a href="{{ url_for('documentos.detalle_documento', id=mov.documento_id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i> Ver Documento
-                                    </a>
-                                </div>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p class="text-center">No hay movimientos recientes.</p>
                     {% endif %}
                 </div>
             </div>

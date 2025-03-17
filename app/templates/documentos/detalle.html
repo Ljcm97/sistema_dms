@@ -108,6 +108,27 @@
                 </div>
             </div>
 
+            {% if es_destinatario and pendiente_aceptacion %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Acciones disponibles</h6>
+                </div>
+                <div class="card-body">
+                    <p>Este documento ha sido asignado a usted. Por favor, acepte o rechace el documento.</p>
+                    <div class="btn-group">
+                        <form method="POST" action="{{ url_for('documentos.aceptar_documento', id=documento.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Aceptar Documento
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalRechazar">
+                            <i class="fas fa-times"></i> Rechazar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Formulario de Transferencia -->
             {% if puede_transferir %}
             <div class="card shadow mb-4">

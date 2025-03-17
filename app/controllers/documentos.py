@@ -273,6 +273,9 @@ def registrar_entrada():
     
     form = DocumentoEntradaForm()
     
+    # Obtener todas las áreas activas para el formulario
+    areas = Area.query.filter_by(activo=True).order_by(Area.nombre).all()
+    
     # Establecer fecha y hora actual si el formulario es nuevo
     if request.method == 'GET':
         form.fecha_recepcion.data = datetime.now()
@@ -336,6 +339,7 @@ def registrar_entrada():
                     )
             
             flash(f'Documento entrante registrado correctamente con radicado {radicado}', 'success')
+            # Redirigir a la misma página para limpiar el formulario
             return redirect(url_for('documentos.registrar_entrada'))
             
         except Exception as e:
@@ -356,8 +360,8 @@ def registrar_entrada():
     return render_template('documentos/registrar_entrada.html',
                           title='Registrar Documento Entrante',
                           form=form,
+                          areas=areas,
                           documentos=documentos)
-            
 
 @documentos_bp.route('/registrar-entrada-completo', methods=['GET', 'POST'])
 @login_required
@@ -379,6 +383,9 @@ def registrar_salida():
         return redirect(url_for('documentos.dashboard'))
     
     form = DocumentoSalidaForm()
+    
+    # Obtener todas las áreas activas para el formulario
+    areas = Area.query.filter_by(activo=True).order_by(Area.nombre).all()
     
     if form.validate_on_submit():
         try:
@@ -443,6 +450,7 @@ def registrar_salida():
     return render_template('documentos/registrar_salida.html',
                           title='Registrar Documento Saliente',
                           form=form,
+                          areas=areas,
                           documentos=documentos)
 
 @documentos_bp.route('/registrar-salida-completo', methods=['GET', 'POST'])
@@ -460,6 +468,9 @@ def transferir_documento():
     Transferir un documento a otra área/persona
     """
     form = TransferenciaDocumentoForm()
+    
+    # Obtener todas las áreas activas para posibles mensajes de error
+    areas = Area.query.filter_by(activo=True).order_by(Area.nombre).all()
     
     if form.validate_on_submit():
         documento_id = form.documento_id.data

@@ -128,64 +128,112 @@ function confirmarEliminacion(event, mensaje = '¿Está seguro de que desea elim
     return true;
 }
 
-// Función para cargar notificaciones con mejor feedback visual
+// Función para cargar notificaciones con mejor manejo de errores y feedback
 function cargarNotificaciones() {
+    console.log("Cargando notificaciones...");
+    
     // Mostrar indicador de carga
     $('#notificacionesLoading').show();
     $('#noNotificaciones').hide();
-    $('#notificacionesList').find('li.notification-item').remove();
+    $('#notificacionesList').empty();
     
-    $.getJSON('/notificaciones/no-leidas', function(data) {
-        const $notificacionesList = $('#notificacionesList');
-        const $notificacionesCount = $('#notificacionesCount');
-        const $notificacionesTotalCount = $('#notificacionesTotalCount');
-        const $noNotificaciones = $('#noNotificaciones');
-        
-        // Ocultar indicador de carga
-        $('#notificacionesLoading').hide();
-        
-        // Actualizar contadores
-        if (data.length > 0) {
-            $notificacionesCount.text(data.length).show();
-            $notificacionesTotalCount.text(data.length);
-            $noNotificaciones.hide();
+    $.ajax({
+        url: '/notificaciones/no-leidas',
+        type: 'GET',
+        dataType: 'json',
+        timeout: 5000,
+        success: function(data) {
+            console.log("Notificaciones recibidas:", data);
             
-            // Agregar notificaciones
-            data.forEach(function(notificacion) {
-                const $item = $('<li>').addClass('dropdown-item notification-item unread');
-                const $link = $('<a>').attr('href', notificacion.url)
-                    .addClass('notification-link')
-                    .data('id', notificacion.id);
-                
-                const $content = $('<div>').addClass('notification-content');
-                // Usamos div con clase específica para el mensaje
-                $content.append($('<div>').addClass('notification-message').text(notificacion.mensaje));
-                $content.append($('<div>').addClass('notification-time').text(notificacion.fecha));
-                
-                $link.append($content);
-                $item.append($link);
-                $notificacionesList.append($item);
-            });
+            const $notificacionesList = $('#notificacionesList');
+            const $notificacionesCount = $('#notificacionesCount');
+            const $notificacionesTotalCount = $('#notificacionesTotalCount');
+            const $noNotificaciones = $('#noNotificaciones');
             
-            // Agregar evento para marcar como leída
-            $('.notification-link').click(function(e) {
-                const id = $(this).data('id');
-                // No detenemos el evento predeterminado para permitir la navegación
-                // Al mismo tiempo hacemos una petición para marcar como leída
-                $.get('/notificaciones/marcar-leida/' + id);
-            });
-        } else {
-            $notificacionesCount.hide();
-            $notificacionesTotalCount.text("0");
-            $noNotificaciones.show();
+            // Ocultar indicador de carga
+            $('#notificacionesLoading').hide();
+            
+            // Actualizar contadores
+            if (data && data.length > 0) {
+                $notificacionesCount.text(data.length).show();
+                $notificacionesTotalCount.text(data.length);
+                $noNotificaciones.hide();
+                
+                // Agregar notificaciones
+                data.forEach(function(notificacion) {
+                    const $item = $('<li>').addClass('dropdown-item notification-item unread');
+                    const $link = $('<a>').attr('href', notificacion.url)
+                        .addClass('notification-link')
+                        .data('id', notificacion.id);
+                    
+                    const $content = $('<div>').addClass('notification-content');
+                    $content.append($('<div>').addClass('notification-message').text(notificacion.mensaje));
+                    $content.append($('<div>').addClass('notification-time').text(notificacion.fecha));
+                    
+                    $link.append($content);
+                    $item.append($link);
+                    $notificacionesList.append($item);
+                });
+                
+                // Agregar evento para marcar como leída
+                $('.notification-link').click(function(e) {
+                    const id = $(this).data('id');
+                    console.log("Marcando como leída la notificación:", id);
+                    $.get('/notificaciones/marcar-leida/' + id);
+                });
+            } else {
+                $notificacionesCount.hide();
+                $notificacionesTotalCount.text("0");
+                $noNotificaciones.show();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error al cargar notificaciones:", status, error);
+            $('#notificacionesLoading').hide();
+            $('#noNotificaciones').text('Error al cargar notificaciones').show();
         }
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-        // Manejo de error
-        $('#notificacionesLoading').hide();
-        $('#noNotificaciones').text('Error al cargar notificaciones').show();
-        console.error('Error al cargar notificaciones:', textStatus, errorThrown);
     });
 }
+
+// Función para actualizar solo el contador de notificaciones
+function actualizarContadorNotificaciones() {
+    $.ajax({
+        url: '/notificaciones/count',
+        type: 'GET',
+        dataType: 'json',
+        timeout: 3000,
+        success: function(data) {
+            const $notificacionesCount = $('#notificacionesCount');
+            if (data.count > 0) {
+                $notificacionesCount.text(data.count).show();
+            } else {
+                $notificacionesCount.hide();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error al actualizar contador de notificaciones:", status, error);
+        }
+    });
+}
+
+// Inicialización de eventos para notificaciones
+$(document).ready(function() {
+    // ... otras inicializaciones ...
+    
+    // Iniciar carga de notificaciones
+    setTimeout(cargarNotificaciones, 1000);
+    
+    // Actualizar contador cada 30 segundos
+    setInterval(actualizarContadorNotificaciones, 30000);
+    
+    // Cargar notificaciones completas cada 2 minutos
+    setInterval(cargarNotificaciones, 120000);
+    
+    // Cargar notificaciones al hacer clic en el icono
+    $('#notificacionesLink').click(function() {
+        cargarNotificaciones();
+    });
+});
 
 // Refresca el contador de notificaciones cada minuto sin recargar toda la lista
 function actualizarContadorNotificaciones() {
