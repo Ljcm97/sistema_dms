@@ -25,12 +25,12 @@
             <div class="login-logo">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
                 <h1>Agroindustrial Molino Sonora AP S.A.S.</h1>
-                <p>Sistema de Gestión Documental</p>
+                <p>SGDI - Sistema de Gestión Documental Interna</p>
             </div>
             
             <!-- Formulario a la derecha -->
             <div class="login-form">
-                <h2>Iniciar Sesión</h2>
+                <h2>¡Iniciar Sesión!</h2>
                 <form method="POST" action="{{ url_for('auth.login') }}">
                     {{ form.hidden_tag() }}
                     
@@ -70,6 +70,11 @@
                 </form>
             </div>
         </div>
+    </div>
+    
+    <!-- Footer para la página de login -->
+    <div class="login-page-footer">
+        <span>© {{ now.year }} Agroindustrial Molino Sonora AP S.A.S. Todos los derechos reservados.</span>
     </div>
 </div>
 {% endblock %}

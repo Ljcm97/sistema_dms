@@ -1,20 +1,20 @@
 /* Tema claro (predeterminado) */
 :root {
   /* Colores de la aplicación */
-  --primary-color: #d00000; /* Rojo corporativo */
+  --primary-color: #1D2C96; /* Azul corporativo */
   --primary-text: #ffffff;
- /* --background-color: #f8f9fa;*/
+  --background-color: #f8f9fa;
   --text-color: #212529;
-/*  --footer-bg: #f8f9fa; +7
-  --footer-text: #6c757d;
+  --footer-bg: #1A237E;
+  --footer-text: #DAA520;
 }
 
 /* Tema oscuro */
 [data-theme="dark"] {
   --background-color: #212529;
   --text-color: #f8f9fa;
-  --footer-bg: #212529;
-  --footer-text: #adb5bd;
+  --footer-bg: #1A237E;
+  --footer-text: #DAA520;
 }
 
 /* Fondo uniforme para TODOS los elementos */
@@ -37,13 +37,13 @@ body,
 
 /* Color botones principales */
 .btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: #DAA520;
+  border-color: #DAA520;
 }
 
 .btn-primary:hover, .btn-primary:focus {
-  background-color: #b20000;
-  border-color: #b20000;
+  background-color: #B8860B;
+  border-color: #B8860B;
 }
 
 /* Headers de tarjetas */
@@ -79,6 +79,7 @@ body,
 /* Footer */
 .footer {
   background-color: var(--footer-bg) !important;
+  border-top: 2px solid #DAA520;
 }
 
 .footer .text-muted {
@@ -87,25 +88,23 @@ body,
 
 /* Estilo login página */
 .login-main {
-  background: #d00000;
-  background: -moz-radial-gradient(center, ellipse cover, #d00000 1%, #8a0000 100%);
-  background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(1%,#d00000), color-stop(100%,#8a0000));
-  background: -webkit-radial-gradient(center, ellipse cover, #d00000 1%,#8a0000 100%);
-  background: -o-radial-gradient(center, ellipse cover, #d00000 1%,#8a0000 100%);
-  background: -ms-radial-gradient(center, ellipse cover, #d00000 1%,#8a0000 100%);
-  background: radial-gradient(ellipse at center, #d00000 1%,#8a0000 100%);
-  min-height: calc(100vh - 56px);
+  background: radial-gradient(circle, #1A2474 10%, #0f1c2e 90%);
+  min-height: 100vh;
   width: 100%;
   margin: 0;
   padding: 0;
 }
 
 .login-input-group span.fa {
-  background-color: var(--primary-color);
+  background-color: #DAA520;
 }
 
 .login-submit {
-  background-color: var(--primary-color);
+  background-color: #DAA520;
+}
+
+.login-submit:hover {
+  background-color: #B8860B;
 }
 
 /* Modo oscuro específico para login */
@@ -124,4 +123,39 @@ body,
   background-color: #343a40;
   border-color: #495057;
   color: #f8f9fa;
+}
+
+/* Estilos adicionales para tablas y elementos */
+.table-documents {
+  background-color: #283B8A; 
+  color: #ffffff;
+  border-radius: 8px;
+}
+
+.table-documents th, .table-documents td {
+  vertical-align: middle;
+  border-color: #DAA520; 
+}
+
+.table-documents th {
+  background-color: #DAA520; 
+  color: #1D2C96; 
+}
+
+.timeline:before {
+  background-color: #DAA520;
+}
+
+.timeline-badge {
+  background-color: #DAA520;
+}
+
+.timeline-panel {
+  border: 1px solid #DAA520;
+  background-color: #283B8A;
+  color: #ffffff;
+}
+
+.border-left-primary {
+  border-left: 4px solid #DAA520;
 }
