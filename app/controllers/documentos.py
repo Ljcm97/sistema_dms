@@ -277,20 +277,14 @@ def registrar_entrada():
     if request.method == 'GET':
         form.fecha_recepcion.data = datetime.now()
     
-    # Pre-procesar el formulario antes de validate_on_submit
-    if request.method == 'POST':
-        # Asegurarnos que persona_destino_id sea 0 si no se seleccionó nada
-        if not form.persona_destino_id.data or form.persona_destino_id.data == '':
-            form.persona_destino_id.data = 0
-    
     if form.validate_on_submit():
         try:
             # Generar radicado único
             radicado = Documento.generar_radicado()
             
-            # Validar si la persona_destino_id es 0, en ese caso asignar None
+            # Validar si la persona_destino_id está vacía o no
             persona_destino_id = None
-            if form.persona_destino_id.data and int(form.persona_destino_id.data) > 0:
+            if form.persona_destino_id.data and form.persona_destino_id.data != '':
                 persona_destino_id = int(form.persona_destino_id.data)
                 
             # Crear el documento
@@ -363,6 +357,7 @@ def registrar_entrada():
                           title='Registrar Documento Entrante',
                           form=form,
                           documentos=documentos)
+            
 
 @documentos_bp.route('/registrar-entrada-completo', methods=['GET', 'POST'])
 @login_required
@@ -480,9 +475,15 @@ def transferir_documento():
             area_origen_id = documento.area_actual_id
             persona_origen_id = documento.persona_actual_id
             
-            # Actualizar documento
+            # Actualizar documento - manejo de persona_destino_id como string vacío
             documento.area_actual_id = form.area_destino_id.data
-            documento.persona_actual_id = form.persona_destino_id.data if form.persona_destino_id.data > 0 else None
+            
+            # Manejar el caso de persona_destino_id como string vacío
+            if form.persona_destino_id.data and form.persona_destino_id.data != '':
+                documento.persona_actual_id = int(form.persona_destino_id.data)
+            else:
+                documento.persona_actual_id = None
+                
             documento.estado_id = form.estado_id.data
             documento.usuario_actualizacion_id = current_user.id
             documento.actualizado_en = datetime.now()

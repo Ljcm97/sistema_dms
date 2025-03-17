@@ -13,7 +13,7 @@ class Persona(db.Model):
     email = db.Column(db.String(100), unique=True)
     telefono = db.Column(db.String(20))
     area_id = db.Column(db.Integer, db.ForeignKey('areas.id'), nullable=False)
-    cargo_id = db.Column(db.Integer, db.ForeignKey('cargos.id'))  # Relación con Cargo
+    cargo_id = db.Column(db.Integer, db.ForeignKey('cargos.id'))
     activo = db.Column(db.Boolean, default=True)
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -23,7 +23,6 @@ class Persona(db.Model):
                                         foreign_keys='Documento.persona_actual_id', 
                                         backref='persona_actual', 
                                         lazy='dynamic')
-    # Modificado para eliminar el backref duplicado
     cargo = db.relationship('Cargo', foreign_keys=[cargo_id])
     
     @property
@@ -32,13 +31,3 @@ class Persona(db.Model):
         Obtener el nombre completo de la persona
         """
         return f"{self.nombre} {self.apellido}"
-    
-    def __repr__(self):
-        return f'<Persona {self.nombre} {self.apellido}>'
-    
-    @classmethod
-    def get_by_area(cls, area_id):
-        """
-        Obtener todas las personas de un área específica
-        """
-        return cls.query.filter_by(area_id=area_id, activo=True).order_by(cls.nombre, cls.apellido).all()

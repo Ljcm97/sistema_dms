@@ -1,0 +1,35 @@
+/* Forzar que los dropdowns siempre se abran hacia abajo */
+.dropdown-menu {
+    top: 100% !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+  
+  /* También se aplica a los elementos select al abrirse */
+  .bootstrap-select .dropdown-menu {
+    top: 100% !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+  
+  /* Forzar que los selects y dropdowns personalizados también se abran hacia abajo */
+  .dropdown-menu[data-popper-placement="top-start"],
+  .dropdown-menu[data-popper-placement="top"],
+  .dropdown-menu[data-popper-placement="top-end"] {
+    top: 100% !important;
+    bottom: auto !important;
+    transform: translate3d(0px, 0px, 0px) !important;
+  }
+  
+  /* Para selects en formularios */
+  select.form-select {
+    position: relative;
+  }
+  
+  /* Para mejorar la experiencia en dispositivos móviles */
+  @media (max-width: 767.98px) {
+    .dropdown-menu {
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+  }

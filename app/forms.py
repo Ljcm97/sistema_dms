@@ -88,7 +88,6 @@ class PersonaForm(FlaskForm):
         self.cargo_id.choices = [(0, '-- Seleccione --')] + [(c.id, c.nombre) 
                                 for c in Cargo.query.filter_by(activo=True).order_by(Cargo.nombre).all()]
 
-
 class DocumentoEntradaForm(FlaskForm):
     """
     Formulario para registrar documentos entrantes
@@ -102,7 +101,7 @@ class DocumentoEntradaForm(FlaskForm):
     contenido = TextAreaField('Contenido')
     observaciones = TextAreaField('Observaciones')
     area_destino_id = SelectField('Área Destino', coerce=int, validators=[DataRequired()])
-    persona_destino_id = SelectField('Persona Destino', coerce=int, default=0)
+    persona_destino_id = SelectField('Persona Destino', coerce=str, validators=[Optional()]) 
     submit = SubmitField('Registrar Documento')
     
     def __init__(self, *args, **kwargs):
@@ -116,12 +115,8 @@ class DocumentoEntradaForm(FlaskForm):
         self.area_destino_id.choices = [
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
-        self.persona_destino_id.choices = [(0, '-- Seleccione --')]
-        
-    def validate_persona_destino_id(self, field):
-        # Permitir explícitamente el valor 0 para persona_destino_id
-        if field.data == 0:
-            return True
+        self.persona_destino_id.choices = [('', '-- Seleccione --')]
+
 
 class DocumentoSalidaForm(FlaskForm):
     """
@@ -132,7 +127,7 @@ class DocumentoSalidaForm(FlaskForm):
     transportadora_id = SelectField('Transportadora', coerce=int, validators=[DataRequired()])
     numero_guia = StringField('Número de Guía', validators=[Length(1, 50), Optional()])
     area_origen_id = SelectField('Área Origen', coerce=int, validators=[DataRequired()])
-    persona_origen_id = SelectField('Persona Origen', coerce=int, validate_choice=False)
+    persona_origen_id = SelectField('Persona Origen', coerce=str, validators=[Optional()])
     destinatario = StringField('Destinatario', validators=[DataRequired(), Length(1, 255)])
     tipo_documento_id = SelectField('Tipo de Documento', coerce=int, validators=[DataRequired()])
     contenido = TextAreaField('Contenido')
@@ -150,7 +145,7 @@ class DocumentoSalidaForm(FlaskForm):
         self.area_origen_id.choices = [
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
-        self.persona_origen_id.choices = [(0, '-- Seleccione --')]
+        self.persona_origen_id.choices = [('', '-- Seleccione --')]
 
 class TransferenciaDocumentoForm(FlaskForm):
     """
@@ -158,7 +153,7 @@ class TransferenciaDocumentoForm(FlaskForm):
     """
     documento_id = HiddenField('ID Documento', validators=[DataRequired()])
     area_destino_id = SelectField('Área Destino', coerce=int, validators=[DataRequired()])
-    persona_destino_id = SelectField('Persona Destino', coerce=int, validate_choice=False)
+    persona_destino_id = SelectField('Persona Destino', coerce=str, validators=[Optional()])
     estado_id = SelectField('Estado', coerce=int, validators=[DataRequired()])
     observaciones = TextAreaField('Observaciones')
     submit = SubmitField('Transferir Documento')
@@ -168,7 +163,7 @@ class TransferenciaDocumentoForm(FlaskForm):
         self.area_destino_id.choices = [
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
-        self.persona_destino_id.choices = [(0, '-- Seleccione --')]
+        self.persona_destino_id.choices = [('', '-- Seleccione --')]
         self.estado_id.choices = [
             (e.id, e.nombre) for e in EstadoDocumento.query.order_by(EstadoDocumento.nombre).all()
         ]

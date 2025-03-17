@@ -125,9 +125,7 @@
                     
                     <div class="col-md-6">
                         {{ form.persona_destino_id.label(class="form-label") }}
-                        <select name="persona_destino_id" id="persona_destino_id" class="form-select">
-                            <option value="0">-- Seleccione --</option>
-                        </select>
+                        {{ form.persona_destino_id(class="form-select", id="persona_destino_id") }}
                         {% if form.persona_destino_id.errors %}
                             <div class="text-danger">
                                 {% for error in form.persona_destino_id.errors %}

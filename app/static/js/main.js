@@ -5,13 +5,13 @@ function cargarPersonasPorArea(selectArea, selectPersona) {
     
     // Mostrar indicador de carga
     $personaSelect.prop('disabled', true);
-    $personaSelect.empty();
-    $personaSelect.append('<option value="0">Cargando personas...</option>');
+    $personaSelect.empty(); // Limpiar opciones existentes
+    $personaSelect.append('<option value="">Cargando personas...</option>');
     
     // Verificar que el selector de área existe y tiene un valor válido
     if (!areaId || areaId <= 0) {
         $personaSelect.empty();
-        $personaSelect.append('<option value="0">-- Seleccione primero un área --</option>');
+        $personaSelect.append('<option value="">-- Seleccione primero un área --</option>');
         $personaSelect.prop('disabled', false);
         return;
     }
@@ -24,40 +24,36 @@ function cargarPersonasPorArea(selectArea, selectPersona) {
         method: 'GET',
         dataType: 'json',
         timeout: 10000, // 10 segundos de timeout
-        xhrFields: {
-            withCredentials: true
-        },
         success: function(data) {
+            // Limpiar opciones existentes
             $personaSelect.empty();
-            $personaSelect.append('<option value="0">-- Seleccione --</option>');
+            
+            // Siempre agregar la opción por defecto
+            $personaSelect.append('<option value="">-- Seleccione --</option>');
             
             if (data && data.length > 0) {
+                // Agregar opciones de personas
                 $.each(data, function(index, persona) {
-                    $personaSelect.append(`<option value="${persona.id}">${persona.nombre_completo || persona.nombre}</option>`);
+                    $personaSelect.append(`<option value="${persona.id}">${persona.nombre_completo}</option>`);
                 });
                 console.log(`Cargadas ${data.length} personas para el área ${areaId}`);
             } else {
+                // Solo agregar un mensaje de "No hay personas" si no hay datos
                 console.log('No se encontraron personas para esta área');
-                $personaSelect.append('<option value="0" disabled>No hay personas en esta área</option>');
+                $personaSelect.append('<option value="" disabled>No hay personas en esta área</option>');
             }
+            
+            // Habilitar el selector
             $personaSelect.prop('disabled', false);
         },
         error: function(xhr, status, error) {
-            console.error(`Error al cargar personas: ${error}`);
+            console.error(`Error al cargar personas: ${error}`, xhr.responseText);
             $personaSelect.empty();
-            $personaSelect.append('<option value="0">-- Error al cargar personas --</option>');
+            $personaSelect.append('<option value="">-- Error al cargar personas --</option>');
             $personaSelect.prop('disabled', false);
             
-            // Manejo de errores específicos
-            if (xhr.status === 500) {
-                alert('Error del servidor al cargar el listado de personas. Por favor, inténtelo de nuevo más tarde.');
-            } else if (xhr.status === 404) {
-                // Intentamos cargar directamente personas del área
-                hacerCargaManual(areaId, $personaSelect);
-            } else {
-                // Intentar rutas alternativas
-                fallbackLoadPersonas(areaId, $personaSelect);
-            }
+            // Intentar con rutas alternativas
+            fallbackLoadPersonas(areaId, $personaSelect);
         }
     });
 }
@@ -66,23 +62,25 @@ function cargarPersonasPorArea(selectArea, selectPersona) {
 function fallbackLoadPersonas(areaId, $personaSelect) {
     // Intenta usar la ruta alternativa para obtener personas
     $.ajax({
-        url: `/personas_api/personas-por-area/${areaId}`,
+        url: `/admin/api/personas-por-area/${areaId}`,
         method: 'GET',
         dataType: 'json',
         timeout: 8000,
         success: function(data) {
             $personaSelect.empty();
-            $personaSelect.append('<option value="0">-- Seleccione --</option>');
+            $personaSelect.append('<option value="">-- Seleccione --</option>');
             
             if (data && data.length > 0) {
                 $.each(data, function(index, persona) {
                     $personaSelect.append(`<option value="${persona.id}">${persona.nombre_completo || persona.nombre}</option>`);
                 });
+            } else {
+                $personaSelect.append('<option value="" disabled>No hay personas en esta área</option>');
             }
             $personaSelect.prop('disabled', false);
         },
         error: function() {
-            // Si también falla, intenta con la ruta original de admin
+            // Si también falla, intenta con la última ruta de respaldo
             hacerCargaManual(areaId, $personaSelect);
         }
     });
@@ -93,10 +91,10 @@ function hacerCargaManual(areaId, $personaSelect) {
     console.log("Intentando carga manual para el área: " + areaId);
     
     $personaSelect.empty();
-    $personaSelect.append('<option value="0">-- Seleccione --</option>');
+    $personaSelect.append('<option value="">-- Seleccione --</option>');
     
     // Intentamos una solución alternativa usando fetch
-    fetch(`/admin/api/personas-por-area/${areaId}`)
+    fetch(`/personas_api/personas-por-area/${areaId}`)
     .then(response => {
         if (response.ok) {
             return response.json();
@@ -109,12 +107,12 @@ function hacerCargaManual(areaId, $personaSelect) {
                 $personaSelect.append(`<option value="${persona.id}">${persona.nombre_completo}</option>`);
             });
         } else {
-            $personaSelect.append('<option value="0" disabled>No hay personas disponibles</option>');
+            $personaSelect.append('<option value="" disabled>No hay personas disponibles</option>');
         }
     })
     .catch(error => {
         console.error('Error en carga manual:', error);
-        $personaSelect.append('<option value="0" disabled>No se pudieron cargar personas</option>');
+        $personaSelect.append('<option value="" disabled>No se pudieron cargar personas</option>');
     })
     .finally(() => {
         $personaSelect.prop('disabled', false);
@@ -249,5 +247,18 @@ $(document).ready(function() {
     // Cargar notificaciones al hacer clic en el icono
     $('#notificacionesLink').click(function() {
         cargarNotificaciones();
+    });
+});
+
+// Asegurar que los selects siempre se abran hacia abajo
+$(document).ready(function() {
+    // Prevenir que los selects se abran hacia arriba
+    $('.form-select').on('shown.bs.select', function() {
+        var dropdownMenu = $(this).next('.dropdown-menu');
+        dropdownMenu.css({
+            'top': '100%',
+            'bottom': 'auto',
+            'transform': 'none'
+        });
     });
 });
