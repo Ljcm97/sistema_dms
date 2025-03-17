@@ -163,14 +163,14 @@ body, html {
 
 /* Login page footer */
 .login-page-footer {
-    background-color: #1A237E;
-    color: #DAA520;
+    background-color: #ffffff;
+    color: #1A237E;
     text-align: center;
     padding: 15px 0;
     width: 100%;
     position: absolute;
     bottom: 0;
-    border-top: 2px solid #DAA520;
+    border-top: 4px solid #DAA520;
 }
 
 /* Mensajes de error */
