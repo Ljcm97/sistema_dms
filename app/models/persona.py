@@ -18,7 +18,7 @@ class Persona(db.Model):
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relaciones
-    usuario = db.relationship('Usuario', backref='persona', uselist=False)
+    usuario = db.relationship('Usuario', back_populates='persona', uselist=False, cascade='all, delete-orphan')
     documentos_actuales = db.relationship('Documento', 
                                         foreign_keys='Documento.persona_actual_id', 
                                         backref='persona_actual', 

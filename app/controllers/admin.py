@@ -372,9 +372,6 @@ def privilegios():
 @admin_bp.route('/privilegios/actualizar/<int:usuario_id>', methods=['POST'])
 @login_required
 def actualizar_privilegio(usuario_id):
-    """
-    Actualizar privilegios de un usuario
-    """
     # Verificar que el usuario sea superadministrador
     if not current_user.is_superadmin():
         flash('No tienes permisos para esta acción', 'danger')
@@ -387,19 +384,17 @@ def actualizar_privilegio(usuario_id):
         flash('No se pueden modificar privilegios de superadministradores', 'warning')
         return redirect(url_for('admin.privilegios'))
     
-    # Obtener el privilegio actual o crear uno nuevo
-    privilegio = Privilegio.query.filter_by(usuario_id=usuario_id).first()
-    if not privilegio:
-        privilegio = Privilegio(usuario_id=usuario_id, creado_por=current_user.id)
-        db.session.add(privilegio)
+    # Obtener o crear privilegios
+    privilegio = usuario.privilegios or Privilegio(usuario_id=usuario_id, creado_por=current_user.id)
     
     # Actualizar privilegios
-    puede_registrar = request.form.get('puede_registrar_documentos') == 'on'
-    puede_ver = request.form.get('puede_ver_documentos_area') == 'on'
+    privilegio.puede_registrar_documentos = request.form.get('puede_registrar_documentos') == 'on'
+    privilegio.puede_ver_documentos_area = request.form.get('puede_ver_documentos_area') == 'on'
+    privilegio.puede_administrar_usuarios = request.form.get('puede_administrar_usuarios') == 'on'
+    privilegio.puede_administrar_personas = request.form.get('puede_administrar_personas') == 'on'
+    privilegio.puede_administrar_areas = request.form.get('puede_administrar_areas') == 'on'
     
-    privilegio.puede_registrar_documentos = puede_registrar
-    privilegio.puede_ver_documentos_area = puede_ver
-    
+    db.session.add(privilegio)
     db.session.commit()
     
     flash(f'Privilegios del usuario {usuario.username} actualizados correctamente', 'success')

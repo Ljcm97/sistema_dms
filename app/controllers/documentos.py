@@ -11,6 +11,7 @@ from app.models.historial import HistorialMovimiento
 from app.models.area import Area
 from app.models.persona import Persona
 from app.models.usuario import Usuario
+from app.utils.decoradores import permiso_requerido, solo_superadmin
 
 # Crear blueprint
 tipos_bp = Blueprint('tipos', __name__, url_prefix='/tipos')
@@ -18,14 +19,12 @@ documentos_bp = Blueprint('documentos', __name__)
 
 @tipos_bp.route('/')
 @login_required
+@solo_superadmin
 def index():
     """
     Lista de tipos de documento
     """
-    # Verificar que el usuario sea superadministrador
-    if not current_user.is_superadmin():
-        flash('No tienes permisos para acceder a esta sección', 'danger')
-        return redirect(url_for('documentos.dashboard'))
+    # Ya no es necesario verificar permisos aquí porque el decorador @solo_superadmin lo hace
     
     page = request.args.get('page', 1, type=int)
     
@@ -75,8 +74,6 @@ def index():
                           total_tipos=total_tipos,
                           activos=activos,
                           tipos_uso=tipos_uso)
-
-# ... Otras rutas de tipos_bp ...
 
 @documentos_bp.route('/')
 @login_required
@@ -172,23 +169,7 @@ def lista_documentos():
         fecha_hasta = fecha_hasta + timedelta(days=1)  # Incluir todo el día
         query = query.filter(Documento.fecha_recepcion <= fecha_hasta)
     
-    if request.args.get('transportadora_id') and int(request.args.get('transportadora_id')) > 0:
-        query = query.filter(Documento.transportadora_id == int(request.args.get('transportadora_id')))
-    
-    if request.args.get('tipo_documento_id') and int(request.args.get('tipo_documento_id')) > 0:
-        query = query.filter(Documento.tipo_documento_id == int(request.args.get('tipo_documento_id')))
-    
-    if request.args.get('area_id') and int(request.args.get('area_id')) > 0:
-        query = query.filter(Documento.area_actual_id == int(request.args.get('area_id')))
-    
-    if request.args.get('estado_id') and int(request.args.get('estado_id')) > 0:
-        query = query.filter(Documento.estado_id == int(request.args.get('estado_id')))
-    
-    if request.args.get('es_entrada') in ['0', '1']:
-        query = query.filter(Documento.es_entrada == (request.args.get('es_entrada') == '1'))
-    
-    if request.args.get('remitente'):
-        query = query.filter(Documento.remitente.like(f"%{request.args.get('remitente')}%"))
+    # Más filtros...
     
     # Si no es superadmin, mostrar solo documentos del área del usuario
     if not current_user.is_superadmin() and not current_user.puede_ver_documentos_area():
@@ -262,14 +243,12 @@ def detalle_documento(id):
 
 @documentos_bp.route('/registrar-entrada', methods=['GET', 'POST'])
 @login_required
+@permiso_requerido('puede_registrar_documentos')
 def registrar_entrada():
     """
     Registrar un nuevo documento entrante
     """
-    # Verificar que el usuario pueda registrar documentos
-    if not current_user.puede_registrar_documentos():
-        flash('No tienes permisos para registrar documentos', 'danger')
-        return redirect(url_for('documentos.dashboard'))
+    # Ya no es necesario verificar permisos aquí porque el decorador lo hace
     
     form = DocumentoEntradaForm()
     
@@ -329,7 +308,6 @@ def registrar_entrada():
             # Crear notificación si hay persona destino
             if documento.persona_actual_id:
                 from app.models.notificacion import Notificacion
-                from app.models.usuario import Usuario
                 usuario_destino = Usuario.query.filter_by(persona_id=documento.persona_actual_id).first()
                 if usuario_destino:
                     Notificacion.crear_notificacion_documento(
@@ -365,6 +343,7 @@ def registrar_entrada():
 
 @documentos_bp.route('/registrar-entrada-completo', methods=['GET', 'POST'])
 @login_required
+@permiso_requerido('puede_registrar_documentos')
 def registrar_entrada_completo():
     """
     Vista completa para registrar un documento entrante
@@ -373,14 +352,12 @@ def registrar_entrada_completo():
 
 @documentos_bp.route('/registrar-salida', methods=['GET', 'POST'])
 @login_required
+@permiso_requerido('puede_registrar_documentos')
 def registrar_salida():
     """
     Registrar un nuevo documento saliente
     """
-    # Verificar que el usuario pueda registrar documentos
-    if not current_user.puede_registrar_documentos():
-        flash('No tienes permisos para registrar documentos', 'danger')
-        return redirect(url_for('documentos.dashboard'))
+    # Ya no es necesario verificar permisos aquí porque el decorador lo hace
     
     form = DocumentoSalidaForm()
     
@@ -455,6 +432,7 @@ def registrar_salida():
 
 @documentos_bp.route('/registrar-salida-completo', methods=['GET', 'POST'])
 @login_required
+@permiso_requerido('puede_registrar_documentos')
 def registrar_salida_completo():
     """
     Vista completa para registrar un documento saliente

@@ -38,6 +38,18 @@ class Usuario(UserMixin, db.Model):
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relaciones
+    persona = db.relationship('Persona', back_populates='usuario')
+    
+    # Relación con Privilegios
+    privilegios = db.relationship(
+        'Privilegio', 
+        back_populates='usuario',
+        uselist=False,  # Un usuario tiene un solo conjunto de privilegios
+        cascade='all, delete-orphan',  # Eliminar privilegios al eliminar usuario
+        primaryjoin='Usuario.id == Privilegio.usuario_id',
+        foreign_keys='[Privilegio.usuario_id]'
+    )
+    
     documentos_creados = db.relationship('Documento', 
                                         foreign_keys='Documento.usuario_creacion_id', 
                                         backref='creador', 
@@ -49,14 +61,7 @@ class Usuario(UserMixin, db.Model):
     movimientos = db.relationship('HistorialMovimiento', 
                                  backref='usuario', 
                                  lazy='dynamic')
-    # Relación con Privilegio corregida para evitar ambigüedad
-    privilegios = db.relationship(
-        'Privilegio', 
-        foreign_keys='Privilegio.usuario_id', 
-        backref=db.backref('usuario', uselist=False),
-        uselist=False
-    )
-    
+
     @property
     def password(self):
         """
@@ -88,43 +93,51 @@ class Usuario(UserMixin, db.Model):
         """
         Verificar si el usuario es superadministrador
         """
-        return self.rol.es_superadmin
+        return self.rol.es_superadmin if self.rol else False
+    
+    def tiene_permiso(self, permiso):
+        """
+        Verificar si el usuario tiene un permiso específico
+        """
+        # Superadministradores tienen todos los permisos
+        if self.is_superadmin():
+            return True
+        
+        # Verificar permisos específicos
+        if self.privilegios:
+            return getattr(self.privilegios, permiso, False)
+        
+        return False
     
     def puede_registrar_documentos(self):
         """
-        Verificar si el usuario puede registrar documentos
+        Verificar si puede registrar documentos
         """
-        # Los superadministradores siempre pueden
-        if self.is_superadmin():
-            return True
-        
-        # Verificar privilegios especiales
-        if self.privilegios and self.privilegios.puede_registrar_documentos:
-            return True
-        
-        # Verificar si el usuario tiene rol de recepción (insensible a mayúsculas/minúsculas)
-        if self.rol and self.rol.nombre.lower() in ['recepción', 'recepcion']:
-            return True
-            
-        return False
+        return self.tiene_permiso('puede_registrar_documentos')
     
     def puede_ver_documentos_area(self):
         """
-        Verifica si el usuario puede ver todos los documentos de su área
-        Usuarios con rol de superadmin o recepción pueden ver todos los documentos del área
+        Verificar si puede ver documentos del área
         """
-        if self.is_superadmin():
-            return True
-            
-        # Verificar privilegios especiales
-        if self.privilegios and self.privilegios.puede_ver_documentos_area:
-            return True
-            
-        # Verificar si el usuario tiene rol de recepción (insensible a mayúsculas/minúsculas)
-        if self.rol and self.rol.nombre.lower() in ['recepción', 'recepcion']:
-            return True
-            
-        return False
+        return self.tiene_permiso('puede_ver_documentos_area')
+    
+    def puede_administrar_usuarios(self):
+        """
+        Verificar si puede administrar usuarios
+        """
+        return self.tiene_permiso('puede_administrar_usuarios')
+    
+    def puede_administrar_personas(self):
+        """
+        Verificar si puede administrar personas
+        """
+        return self.tiene_permiso('puede_administrar_personas')
+    
+    def puede_administrar_areas(self):
+        """
+        Verificar si puede administrar áreas
+        """
+        return self.tiene_permiso('puede_administrar_areas')
     
     def __repr__(self):
         return f'<Usuario {self.username}>'

@@ -42,7 +42,7 @@
                             <td>
                                 {% if usuario.is_superadmin() %}
                                 <span class="badge bg-success">Sí (Superadmin)</span>
-                                {% elif usuario.privilegio and usuario.privilegio.puede_registrar_documentos %}
+                                {% elif usuario.privilegios and usuario.privilegios.puede_registrar_documentos %}
                                 <span class="badge bg-success">Sí</span>
                                 {% else %}
                                 <span class="badge bg-danger">No</span>
@@ -51,7 +51,7 @@
                             <td>
                                 {% if usuario.is_superadmin() %}
                                 <span class="badge bg-success">Sí (Superadmin)</span>
-                                {% elif usuario.privilegio and usuario.privilegio.puede_ver_documentos_area %}
+                                {% elif usuario.privilegios and usuario.privilegios.puede_ver_documentos_area %}
                                 <span class="badge bg-success">Sí</span>
                                 {% else %}
                                 <span class="badge bg-danger">No</span>
@@ -63,15 +63,22 @@
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <div class="form-check form-switch d-inline-block me-2">
                                         <input class="form-check-input" type="checkbox" id="puede_registrar_{{ usuario.id }}" name="puede_registrar_documentos"
-                                            {% if usuario.privilegio and usuario.privilegio.puede_registrar_documentos %}checked{% endif %}
+                                            {% if usuario.privilegios and usuario.privilegios.puede_registrar_documentos %}checked{% endif %}
                                             onchange="this.form.submit()">
-                                        <label class="form-check-label" for="puede_registrar_{{ usuario.id }}">Registrar</label>
+                                        <label class="form-check-label" for="puede_registrar_{{ usuario.id }}">Registrar Documentos</label>
                                     </div>
                                     <div class="form-check form-switch d-inline-block me-2">
                                         <input class="form-check-input" type="checkbox" id="puede_ver_{{ usuario.id }}" name="puede_ver_documentos_area"
-                                            {% if usuario.privilegio and usuario.privilegio.puede_ver_documentos_area %}checked{% endif %}
+                                            {% if usuario.privilegios and usuario.privilegios.puede_ver_documentos_area %}checked{% endif %}
                                             onchange="this.form.submit()">
-                                        <label class="form-check-label" for="puede_ver_{{ usuario.id }}">Ver Área</label>
+                                        <label class="form-check-label" for="puede_ver_{{ usuario.id }}">Ver Documentos del Área</label>
+                                    </div>
+                                    <!-- Nuevos permisos de administración -->
+                                    <div class="form-check form-switch d-inline-block me-2">
+                                        <input class="form-check-input" type="checkbox" id="puede_admin_usuarios_{{ usuario.id }}" name="puede_administrar_usuarios"
+                                            {% if usuario.privilegios and usuario.privilegios.puede_administrar_usuarios %}checked{% endif %}
+                                            onchange="this.form.submit()">
+                                        <label class="form-check-label" for="puede_admin_usuarios_{{ usuario.id }}">Administrar Usuarios</label>
                                     </div>
                                 </form>
                                 {% else %}
