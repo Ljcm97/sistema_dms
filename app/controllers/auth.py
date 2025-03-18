@@ -108,7 +108,7 @@ def before_request():
     
     # Si la ruta actual requiere permisos de superadministrador
     endpoint = request.endpoint
-    if endpoint and any(endpoint.startswith(route) for route in admin_routes):
+    if endpoint and (endpoint in admin_routes or any(endpoint.startswith(route + '.') for route in admin_routes)):
         # Si el usuario no está autenticado o no es superadministrador
         if not current_user.is_authenticated or not current_user.is_superadmin():
             flash('No tienes permisos para acceder a esta área', 'danger')

@@ -1,6 +1,5 @@
-from flask import Blueprint, jsonify, redirect, url_for, request, render_template
+from flask import Blueprint, jsonify, redirect, url_for, request, render_template, current_app
 from flask_login import login_required, current_user
-from flask import current_app
 from app import db
 from app.models.notificacion import Notificacion
 from app.models.documento import Documento

@@ -85,6 +85,9 @@ class PersonaForm(FlaskForm):
         super(PersonaForm, self).__init__(*args, **kwargs)
         self.area_id.choices = [(a.id, a.nombre) 
                                for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()]
+        
+        # Importar Cargo aquí para evitar problemas de importación circular
+        from app.models.cargo import Cargo
         self.cargo_id.choices = [(0, '-- Seleccione --')] + [(c.id, c.nombre) 
                                 for c in Cargo.query.filter_by(activo=True).order_by(Cargo.nombre).all()]
 
@@ -119,7 +122,13 @@ class DocumentoEntradaForm(FlaskForm):
         self.persona_destino_id.choices = [(0, '-- Seleccione --')]
         
     def validate_persona_destino_id(self, field):
-        # Si el valor es 0 o no está en las opciones, simplemente no lo validamos
+        # Si el campo está presente pero no es un valor válido, verificar
+        if field.data and str(field.data) not in ['', '0']:
+            # Verificar que la persona exista
+            from app.models.persona import Persona
+            persona = Persona.query.get(field.data)
+            if not persona:
+                raise ValidationError('Persona no encontrada')
         return True
 
 class DocumentoSalidaForm(FlaskForm):
@@ -152,7 +161,13 @@ class DocumentoSalidaForm(FlaskForm):
         self.persona_origen_id.choices = [(0, '-- Seleccione --')]
         
     def validate_persona_origen_id(self, field):
-        # Si el valor es 0 o no está en las opciones, simplemente no lo validamos
+    # Si el campo está presente pero no es un valor válido, verificar
+        if field.data and str(field.data) not in ['', '0']:
+            # Verificar que la persona exista
+            from app.models.persona import Persona
+            persona = Persona.query.get(field.data)
+            if not persona:
+                raise ValidationError('Persona no encontrada')
         return True
 
 class TransferenciaDocumentoForm(FlaskForm):

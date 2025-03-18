@@ -33,13 +33,13 @@ def personas_por_area(area_id):
             current_app.logger.debug(f"Persona: {p.id} - {p.nombre} {p.apellido} - Área: {p.area_id}")
             result.append({
                 'id': p.id,
-                'nombre_completo': f"{p.nombre} {p.apellido}"
+                'nombre_completo': f"{p.nombre} {p.apellido}" if p.apellido else p.nombre
             })
         
         return jsonify(result)
     except Exception as e:
         current_app.logger.error(f"Error al obtener personas por área: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Error al obtener personas"}), 500
     
     
 @personas_api_bp.route('/diagnostico-personas')
@@ -70,7 +70,7 @@ def diagnostico_personas():
                 'id': persona.id,
                 'nombre': persona.nombre,
                 'apellido': persona.apellido,
-                'nombre_completo': persona.nombre_completo,
+                'nombre_completo': persona.nombre_completo if hasattr(persona, 'nombre_completo') else f"{persona.nombre} {persona.apellido}",
                 'area_id': persona.area_id,
                 'activo': persona.activo
             }
@@ -83,4 +83,4 @@ def diagnostico_personas():
         return jsonify(result)
     except Exception as e:
         current_app.logger.error(f"Error en diagnóstico de personas: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Error en diagnóstico de personas"}), 500

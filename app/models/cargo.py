@@ -26,10 +26,10 @@ class Cargo(db.Model):
         """
         return cls.query.filter_by(activo=True).order_by(cls.nombre).all()
     
-@property
-def personas(self):
-    """
-    Devuelve las personas asociadas a este cargo
-    """
-    from app.models.persona import Persona
-    return Persona.query.filter_by(cargo_id=self.id)
+    @property
+    def get_personas(self):
+        """
+        Devuelve las personas asociadas a este cargo
+        """
+        from app.models.persona import Persona
+        return Persona.query.filter_by(cargo_id=self.id)

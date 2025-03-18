@@ -216,37 +216,6 @@ function actualizarContadorNotificaciones() {
     });
 }
 
-// Inicialización de eventos para notificaciones
-$(document).ready(function() {
-    // ... otras inicializaciones ...
-    
-    // Iniciar carga de notificaciones
-    setTimeout(cargarNotificaciones, 1000);
-    
-    // Actualizar contador cada 30 segundos
-    setInterval(actualizarContadorNotificaciones, 30000);
-    
-    // Cargar notificaciones completas cada 2 minutos
-    setInterval(cargarNotificaciones, 120000);
-    
-    // Cargar notificaciones al hacer clic en el icono
-    $('#notificacionesLink').click(function() {
-        cargarNotificaciones();
-    });
-});
-
-// Refresca el contador de notificaciones cada minuto sin recargar toda la lista
-function actualizarContadorNotificaciones() {
-    $.getJSON('/notificaciones/count', function(data) {
-        const $notificacionesCount = $('#notificacionesCount');
-        if (data.count > 0) {
-            $notificacionesCount.text(data.count).show();
-        } else {
-            $notificacionesCount.hide();
-        }
-    });
-}
-
 // Inicialización cuando el documento está listo
 $(document).ready(function() {
     // Inicializar tooltips de Bootstrap
@@ -296,11 +265,8 @@ $(document).ready(function() {
     $('#notificacionesLink').click(function() {
         cargarNotificaciones();
     });
-});
-
-// Asegurar que los selects siempre se abran hacia abajo
-$(document).ready(function() {
-    // Prevenir que los selects se abran hacia arriba
+    
+    // Asegurar que los selects siempre se abran hacia abajo
     $('.form-select').on('shown.bs.select', function() {
         var dropdownMenu = $(this).next('.dropdown-menu');
         dropdownMenu.css({

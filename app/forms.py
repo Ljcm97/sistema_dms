@@ -92,7 +92,7 @@ class DocumentoEntradaForm(FlaskForm):
     """
     Formulario para registrar documentos entrantes
     """
-    fecha_recepcion = DateTimeField('Fecha y Hora de Recepción', format='%Y-%m-%dT%H:%M', 
+    fecha_recepcion = DateTimeField('Fecha y Hora de Recepción', format='%Y-%m-%d %H:%M', 
                                    validators=[DataRequired()])
     transportadora_id = SelectField('Transportadora', coerce=int, validators=[Optional()])
     numero_guia = StringField('Número de Guía', validators=[Length(1, 50), Optional()])
@@ -101,7 +101,7 @@ class DocumentoEntradaForm(FlaskForm):
     contenido = TextAreaField('Contenido')
     observaciones = TextAreaField('Observaciones')
     area_destino_id = SelectField('Área Destino', coerce=int, validators=[DataRequired()])
-    persona_destino_id = SelectField('Persona Destino', coerce=str, validators=[Optional()]) 
+    persona_destino_id = SelectField('Persona Destino', coerce=str)  # Sin validadores
     submit = SubmitField('Registrar Documento')
     
     def __init__(self, *args, **kwargs):
@@ -115,19 +115,29 @@ class DocumentoEntradaForm(FlaskForm):
         self.area_destino_id.choices = [
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
-        self.persona_destino_id.choices = [('', '-- Seleccione --')]
+        self.persona_destino_id.choices = [(0, '-- Seleccione --')]
+        
+    def validate_persona_destino_id(self, field):
+        # Si el campo está presente pero no es un valor válido, verificar
+        if field.data and field.data not in ['', '0']:
+            # Verificar que la persona exista
+            from app.models.persona import Persona
+            persona = Persona.query.get(int(field.data))
+            if not persona:
+                raise ValidationError('Persona no encontrada')
+        return True
 
 
 class DocumentoSalidaForm(FlaskForm):
     """
     Formulario para registrar documentos salientes
     """
-    fecha_envio = DateTimeField('Fecha y Hora de Envío', format='%Y-%m-%dT%H:%M', 
+    fecha_envio = DateTimeField('Fecha y Hora de Envío', format='%Y-%m-%d %H:%M', 
                                validators=[DataRequired()])
     transportadora_id = SelectField('Transportadora', coerce=int, validators=[DataRequired()])
     numero_guia = StringField('Número de Guía', validators=[Length(1, 50), Optional()])
     area_origen_id = SelectField('Área Origen', coerce=int, validators=[DataRequired()])
-    persona_origen_id = SelectField('Persona Origen', coerce=str, validators=[Optional()])
+    persona_origen_id = SelectField('Persona Origen', coerce=str)  # Sin validadores
     destinatario = StringField('Destinatario', validators=[DataRequired(), Length(1, 255)])
     tipo_documento_id = SelectField('Tipo de Documento', coerce=int, validators=[DataRequired()])
     contenido = TextAreaField('Contenido')
@@ -145,7 +155,17 @@ class DocumentoSalidaForm(FlaskForm):
         self.area_origen_id.choices = [
             (a.id, a.nombre) for a in Area.query.filter_by(activo=True).order_by(Area.nombre).all()
         ]
-        self.persona_origen_id.choices = [('', '-- Seleccione --')]
+        self.persona_origen_id.choices = [(0, '-- Seleccione --')]
+        
+    def validate_persona_origen_id(self, field):
+        # Si el campo está presente pero no es un valor válido, verificar
+        if field.data and field.data not in ['', '0']:
+            # Verificar que la persona exista
+            from app.models.persona import Persona
+            persona = Persona.query.get(int(field.data))
+            if not persona:
+                raise ValidationError('Persona no encontrada')
+        return True
 
 class TransferenciaDocumentoForm(FlaskForm):
     """
