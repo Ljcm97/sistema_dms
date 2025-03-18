@@ -16,10 +16,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
-    <!-- Notifications CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dropdown-fix.css') }}">
     
     {% block styles %}{% endblock %}
@@ -72,95 +69,8 @@
                             <i class="fas fa-chart-bar"></i> Reportes
                         </a>
                     </li>
-                    {% if current_user.is_superadmin() %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="catalogosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-book"></i> Catálogos
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="catalogosDropdown">
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('areas.index') }}">
-                                    <i class="fas fa-building"></i> Áreas
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('cargos.index') }}">
-                                    <i class="fas fa-id-card"></i> Cargos
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('transportadoras.index') }}">
-                                    <i class="fas fa-truck"></i> Transportadoras
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('tipos.index') }}">
-                                    <i class="fas fa-file-signature"></i> Tipos de Documento
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('zonas.index') }}">
-                                    <i class="fas fa-map-marker-alt"></i> Zonas Económicas
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-cogs"></i> Administración
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('admin.usuarios') }}">
-                                    <i class="fas fa-users"></i> Usuarios
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('admin.personas') }}">
-                                    <i class="fas fa-user-tie"></i> Personas
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('admin.privilegios') }}">
-                                    <i class="fas fa-key"></i> Privilegios
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notificacionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-bell"></i>
-                            <span class="position-absolute translate-middle badge rounded-pill bg-danger" id="notificacionesCount" style="font-size: 0.6rem; display: none;">0</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificacionesDropdown">
-                            <li class="dropdown-header d-flex justify-content-between align-items-center">
-                                <span>Notificaciones</span>
-                                <span class="badge bg-primary rounded-pill" id="notificacionesTotalCount">0</span>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li class="text-center py-2" id="notificacionesLoading">
-                                <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                    <span class="visually-hidden">Cargando...</span>
-                                </div>
-                                <span class="ms-1">Cargando notificaciones...</span>
-                            </li>
-                            <li class="text-center py-3" id="noNotificaciones" style="display: none;">
-                                <span class="text-muted"><i class="fas fa-bell-slash me-2"></i>No tienes notificaciones nuevas</span>
-                            </li>
-                            <div id="notificacionesList">
-                                <!-- Aquí se cargarán dinámicamente las notificaciones -->
-                            </div>
-                            <li><hr class="dropdown-divider"></li>
-                            <li class="dropdown-footer">
-                                <a href="{{ url_for('notificaciones.todas') }}" class="btn btn-sm btn-primary w-100">
-                                    <i class="fas fa-list me-1"></i> Ver todas las notificaciones
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle"></i> {{ current_user.username }}
@@ -190,14 +100,14 @@
         <!-- Mostrar mensajes flash sin duplicados -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% set displayed_messages = [] %}
+                {% set unique_messages = {} %}
                 {% for category, message in messages %}
-                    {% if message not in displayed_messages %}
+                    {% if message not in unique_messages %}
+                        {% set _ = unique_messages.__setitem__(message, category) %}
                         <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        {% set displayed_messages = displayed_messages + [message] %}
                     {% endif %}
                 {% endfor %}
             {% endif %}
