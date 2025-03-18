@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.urls import url_parse
 from app import db
@@ -17,6 +17,9 @@ def login():
     # Si el usuario ya está autenticado, redirigir a página principal
     if current_user.is_authenticated:
         return redirect(url_for('documentos.dashboard'))
+    
+    # Eliminar mensajes flash pendientes de login
+    session.pop('_flashes', None)
     
     form = LoginForm()
     
@@ -43,12 +46,8 @@ def login():
         
         current_app.logger.info(f'Usuario {usuario.username} ha iniciado sesión')
         
-        # Redireccionar a la página solicitada o a la página principal
-        next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('documentos.dashboard')
-        
-        return redirect(next_page)
+        # Redireccionar directamente al dashboard, ignorando el parámetro next
+        return redirect(url_for('documentos.dashboard'))
     
     return render_template('auth/login.html', form=form, title='Iniciar Sesión')
 
@@ -60,7 +59,13 @@ def logout():
     """
     current_app.logger.info(f'Usuario {current_user.username} ha cerrado sesión')
     logout_user()
+    
+    # Eliminar todos los mensajes flash pendientes
+    session.pop('_flashes', None)
+    
+    # Agregar un solo mensaje de cierre de sesión
     flash('Has cerrado sesión correctamente', 'info')
+    
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/cambiar-password', methods=['GET', 'POST'])
@@ -93,6 +98,14 @@ def before_request():
     """
     Verificar permisos antes de cada solicitud
     """
+    # Si la solicitud es para acceder a una ruta estática o de login/logout, ignoramos la verificación
+    if not request.endpoint or 'static' in request.path or request.endpoint in ['auth.login', 'auth.logout']:
+        return
+    
+    # Lista de rutas de la API que no deben activar mensajes flash
+    api_routes = ['api.', 'notificaciones.']
+    is_api_route = any(request.endpoint.startswith(route) for route in api_routes) if request.endpoint else False
+        
     # Lista de rutas que requieren permisos de superadministrador
     admin_routes = [
         'admin.index',
@@ -107,10 +120,9 @@ def before_request():
     ]
     
     # Si la ruta actual requiere permisos de superadministrador
-    endpoint = request.endpoint
-    if endpoint and (endpoint in admin_routes or any(endpoint.startswith(route + '.') for route in admin_routes)):
+    if request.endpoint and (request.endpoint in admin_routes or any(request.endpoint.startswith(route + '.') for route in admin_routes)):
         # Si el usuario no está autenticado o no es superadministrador
         if not current_user.is_authenticated or not current_user.is_superadmin():
             flash('No tienes permisos para acceder a esta área', 'danger')
-            current_app.logger.warning(f'Intento de acceso no autorizado a {endpoint} por {current_user.username if current_user.is_authenticated else "usuario anónimo"}')
+            current_app.logger.warning(f'Intento de acceso no autorizado a {request.endpoint} por {current_user.username if current_user.is_authenticated else "usuario anónimo"}')
             return redirect(url_for('documentos.dashboard'))

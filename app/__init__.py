@@ -27,6 +27,9 @@ def create_app(config_name=None):
     config_class = os.environ.get('FLASK_CONFIG', 'development')
     app.config.from_object(f'app.config.{config_class.capitalize()}Config')
     
+    # Habilitar la extensión 'do' para Jinja2
+    app.jinja_env.add_extension('jinja2.ext.do')
+    
     # Inicializar extensiones
     db.init_app(app)
     migrate.init_app(app, db)
